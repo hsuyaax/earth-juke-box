@@ -1,0 +1,85 @@
+:root {
+  --bg: #0d1b3d;
+  --text: #f4efe6;
+  --muted: #c9c3ba;
+  --accent: #ffc25c;
+  --line: #2a3a63;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 18px/1.5 "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+header, main, footer { max-width: 1280px; margin: 0 auto; padding: 0 16px; }
+header { padding-top: 16px; }
+h1, .shelf .t, .notes h2 { font-family: "Bricolage Grotesque", system-ui, sans-serif; }
+h1 { margin: 0; font-size: 1.6rem; }
+h2 { font-size: 1.25rem; margin: 0 0 8px; }
+h3 { font-size: 1rem; margin: 16px 0 4px; color: var(--accent); }
+.pitch { margin: 4px 0 16px; color: var(--muted); }
+a { color: var(--accent); }
+
+/* Stage shrinks to the video box so the canvases line up with the picture exactly. */
+.stage { position: relative; background: #000; line-height: 0; width: fit-content; margin: 0 auto; }
+.stage video { display: block; width: auto; height: auto; max-width: 100%; max-height: 65vh; }.stage canvas { position: absolute; pointer-events: none; }
+#ripples { inset: 0; width: 100%; height: 100%; }
+#overlay { image-rendering: pixelated; }
+.stage { touch-action: none; cursor: crosshair; }
+.stage:focus-visible { outline-offset: 2px; }
+.caption { min-height: 1.5em; margin: 8px 0 0; text-align: center; }
+.probe-pad { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding-bottom: 24px; }
+.pad-h { font-size: 1rem; margin: 0; }
+.help { flex: 1 1 100%; order: 3; margin: 0; color: var(--muted); font-size: 0.9rem; }
+.pad { display: flex; gap: 8px; flex-wrap: wrap; }
+.pad button { min-width: 56px; min-height: 56px; font-size: 1.25rem; }
+.pad #describe { font-size: 1rem; }
+.loading { position: absolute; inset: 0; margin: 0; display: grid; place-items: center; line-height: 1.5; background: rgba(13, 27, 61, 0.85); }
+.loading[hidden] { display: none; }
+
+.controls { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; padding: 12px 0; }
+button {
+  font: inherit; color: var(--text); background: transparent;
+  border: 2px solid var(--line); border-radius: 8px;
+  min-height: 48px; padding: 8px 16px; cursor: pointer;
+}
+button:hover { border-color: var(--muted); }
+button.primary { background: var(--accent); color: var(--bg); border-color: var(--accent); font-weight: 700; min-width: 112px; }
+button[aria-pressed="true"] { border-color: var(--accent); }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+input[type="range"] { accent-color: var(--accent); min-height: 48px; }
+.scrub { flex: 1 1 240px; display: flex; }
+.scrub input { width: 100%; }
+.vol { display: flex; align-items: center; gap: 8px; }
+.time { font-variant-numeric: tabular-nums; color: var(--muted); }
+.keys { margin: 0 0 16px; color: var(--muted); font-size: 0.9rem; }
+kbd { border: 1px solid var(--line); border-radius: 4px; padding: 0 6px; font: inherit; }
+
+.lower { display: grid; grid-template-columns: minmax(260px, 1fr) 2fr; gap: 32px; padding-bottom: 24px; }
+.shelf { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.shelf button { width: 100%; text-align: left; display: grid; grid-template-columns: 64px 1fr; column-gap: 12px; align-items: center; }
+.shelf button > span { grid-column: 2; }
+.disc { grid-row: 1 / 3; width: 64px; height: 64px; border-radius: 50%; border: 3px solid #000; box-shadow: 0 0 0 1px var(--line); }
+.playing .shelf [aria-pressed="true"] .disc { animation: spin 6s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.stage video { transition: opacity 1.5s; }
+.stage.dark video { opacity: 0; }
+.shelf .t { font-weight: 700; }
+.shelf .d { color: var(--muted); font-size: 0.9rem; }
+.notes p { margin: 0; }
+.credit { margin-top: 16px !important; color: var(--muted); font-size: 0.9rem; }
+
+footer { border-top: 1px solid var(--line); padding-bottom: 24px; color: var(--muted); font-size: 0.9rem; }
+
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.skip { position: absolute; left: -9999px; }
+.skip:focus { left: 16px; top: 8px; background: var(--bg); padding: 8px; z-index: 1; }
+
+@media (max-width: 720px) {
+  .lower { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}

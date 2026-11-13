@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Earth Jukebox</title>
+  <meta name="description" content="Hear the planet. Live music generated from NASA Earth visualizations, at the place it happened." />
+</head>
+<body>
+  <a class="skip" href="#controls">Skip to controls</a>
+  <header>
+    <h1>Earth Jukebox</h1>
+    <p class="pitch">Hear the planet. Every sound comes from the NASA picture, at the place it happened.</p>
+  </header>
+
+  <main>
+    <div class="stage dark" id="stage" tabindex="0" role="application" aria-label="Map. Explore by touch" aria-describedby="probe-help">
+      <video id="video" muted playsinline loop preload="auto" aria-describedby="notes-shows"></video>
+      <canvas id="overlay" hidden aria-hidden="true"></canvas>
+      <canvas id="ripples" aria-hidden="true"></canvas>
+      <p class="loading" id="loading">Loading clip…</p>
+    </div>
+    <p id="caption" class="caption" aria-live="polite"></p>
+
+    <div class="controls" id="controls" role="group" aria-label="Player">
+      <button id="play" class="primary" aria-keyshortcuts="Space">Play</button>
+      <label class="scrub">
+        <span class="sr">Position</span>
+        <input id="scrub" type="range" min="0" max="1000" value="0" />
+      </label>
+      <span id="time" class="time" aria-hidden="true">0:00 / 0:00</span>
+      <label class="vol">
+        <span>Volume</span>
+        <input id="volume" type="range" min="0" max="100" value="50" />
+      </label>
+      <button id="legend-btn">Learn the sounds</button>
+      <button id="overlay-btn" aria-pressed="false" aria-keyshortcuts="O">What the engine sees</button>
+    </div>
+    <p class="keys">Keys: <kbd>Space</kbd> play or pause · <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> pick a record · <kbd>O</kbd> what the engine sees · arrows explore the map · <kbd>D</kbd> describe · <kbd>Esc</kbd> stop all sound</p>
+
+    <div class="probe-pad" id="probe-pad" role="group" aria-labelledby="probe-h">
+      <h2 id="probe-h" class="pad-h">Explore by touch</h2>
+      <p id="probe-help" class="help">Move over the map with a mouse or finger, or focus the map and use the arrow keys (Shift moves five cells). You hear what is under the square: the instrument says what it is, faster and louder means more, pitch is height, left and right is position. Press D to describe the spot.</p>
+      <div class="pad">
+        <button data-move="-1,0" aria-label="Move left">←</button>
+        <button data-move="0,-1" aria-label="Move up">↑</button>
+        <button data-move="0,1" aria-label="Move down">↓</button>
+        <button data-move="1,0" aria-label="Move right">→</button>
+        <button id="describe" aria-keyshortcuts="D">Describe</button>
+      </div>
+    </div>
+
+    <div class="lower">
+      <section aria-labelledby="shelf-h">
+        <h2 id="shelf-h">Records</h2>
+        <ul class="shelf" id="shelf"></ul>
+      </section>
+      <section class="notes" aria-labelledby="notes-title">
+        <h2 id="notes-title"></h2>
+        <h3>What it shows</h3>
+        <p id="notes-shows"></p>
+        <h3>What you'll hear</h3>
+        <p id="notes-hear"></p>
+        <h3>What to listen for</h3>
+        <p id="notes-listen"></p>
+        <p class="credit" id="notes-credit"></p>
+      </section>
+    </div>
+  </main>
+
+  <div id="status" class="sr" role="status" aria-live="polite"></div>
+
+  <footer>
+    <p><strong>Not an official NASA product.</strong> A sonification of NASA visualizations; values read from colors are approximate. Clips courtesy of NASA's Scientific Visualization Studio.</p>
+  </footer>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

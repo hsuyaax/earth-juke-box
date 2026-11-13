@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calibrate · Earth Jukebox</title>
+  <style>
+    body { margin: 0; padding: 16px; background: #0d1b3d; color: #f4efe6; font: 16px/1.5 system-ui, sans-serif; }
+    video { width: 100%; max-width: 1280px; display: block; cursor: crosshair; }
+    select, button { font: inherit; min-height: 40px; }
+    pre { background: #000; padding: 12px; white-space: pre-wrap; }
+    #ripples { display: none; }
+  </style>
+</head>
+<body>
+  <h1>Calibration</h1>
+  <p>Pause, then click any point on the map. Copy measured numbers into the record's settings; never type a range you have not sampled.</p>
+  <label>Record <select id="pick"></select></label>
+  <video id="video" controls muted playsinline loop></video>
+  <canvas id="ripples"></canvas>
+  <pre id="out" aria-live="polite">Click the video.</pre>
+  <script type="module" src="/src/calibrate.js"></script>
+</body>
+</html>

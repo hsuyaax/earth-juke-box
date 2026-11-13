@@ -18,14 +18,26 @@ export function noteAt(t, scale, root = 48, octaves = 3) {
   return Tone.Frequency(midi, "midi").toFrequency();
 }
 
+// Every node a record creates is collected, so switching records can free them (running noise sources cost CPU).
+let bag = null;
+const keep = (...nodes) => { bag?.push(...nodes); return nodes[0]; };
+export function withVoices(make) {
+  bag = [];
+  const v = make();
+  const nodes = bag;
+  bag = null;
+  return { v, dispose() { nodes.forEach((n) => n.dispose()); drones = drones.filter((d) => !nodes.includes(d.gainNode)); } };
+}
+
 // Filtered-noise voice with a pitch: the bandpass centre follows the note, so pitch = height still holds.
 function noiseVoice(type, Q, attack, release, volume) {
   return () => {
     const out = new Tone.Volume(volume);
     const env = new Tone.AmplitudeEnvelope({ attack, decay: 0.1, sustain: 0.7, release }).connect(out);
     const bp = new Tone.Filter({ type: "bandpass", Q }).connect(env);
-    new Tone.Noise(type).connect(bp).start();
+    const noise = new Tone.Noise(type).connect(bp).start();
     return {
+      dispose() { [noise, bp, env, out].forEach((n) => n.dispose()); },
       connect(node) { out.connect(node); return this; },
       triggerAttackRelease(freq, dur, time, vel = 1) { bp.frequency.setValueAtTime(freq, time); env.triggerAttackRelease(dur, time, vel); },
     };
@@ -62,25 +74,29 @@ export function setScaleOverride(notes) { scaleOverride = notes; }
 // Position drives pan (x), pitch (y), and the ripple, so sound and picture can't drift apart.
 export function makePool(makeSynth, { color, scale, root = 48, octaves = 3, size = 6, out = musicBus }) {
   const voices = Array.from({ length: size }, () => {
-    const pan = new Tone.Panner(0).connect(out);
-    return { synth: makeSynth().connect(pan), pan };
+    const pan = keep(new Tone.Panner(0).connect(out));
+    return { synth: keep(makeSynth().connect(pan)), pan };
   });
   let n = 0;
-  return (x, y, vel, dur, time, rippleColor = color) => {
+  const play = (x, y, vel, dur, time, rippleColor = color) => {
     const v = voices[n++ % size];
     v.pan.pan.setValueAtTime(x * 2 - 1, time);
     v.synth.triggerAttackRelease(noteAt(1 - y, scaleOverride || scale, root, octaves), dur, time, vel);
     Tone.getDraw().schedule(() => addRipple(x, y, rippleColor, vel), time);
   };
+  play.dispose = () => voices.forEach((v) => { v.synth.dispose(); v.pan.dispose(); });
+  return play;
 }
 
 // Sustained layer (drone/pad): a running source behind a filter and a gain that starts silent.
-const drones = [];
+let drones = [];
 export function makeDrone(source, { cutoff = 800, pan = 0, out = musicBus } = {}) {
-  const gain = new Tone.Gain(0).connect(new Tone.Panner(pan).connect(out));
-  const filter = new Tone.Filter(cutoff, "lowpass").connect(gain);
-  source.connect(filter).start();
+  const panner = keep(new Tone.Panner(pan).connect(out));
+  const gain = keep(new Tone.Gain(0).connect(panner));
+  const filter = keep(new Tone.Filter(cutoff, "lowpass").connect(gain));
+  keep(source.connect(filter).start());
   const d = {
+    gainNode: gain,
     set(level, time, hz) {
       gain.gain.rampTo(level, 0.25, time);
       if (hz) filter.frequency.rampTo(hz, 0.25, time);

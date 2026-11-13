@@ -30,6 +30,7 @@ export function createProbe({ stage, video, state, isAudioReady, announce, getMa
 
   function setRecord(r) {
     rec = r;
+    for (const key of Object.keys(pools)) if (!key.startsWith(r.id + ":")) { const p = pools[key]; delete pools[key]; setTimeout(p.dispose, 1500); }
     counts = new Uint8Array(r.classes.length + 1); // reused every tick
     cx = Math.floor(r.grid[0] / 2); cy = Math.floor(r.grid[1] / 2);
     current = candidate = held = 0; pendingSay = "";

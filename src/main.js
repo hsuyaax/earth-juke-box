@@ -5,7 +5,7 @@ import "@fontsource/atkinson-hyperlegible/700.css";
 import "@fontsource/bricolage-grotesque/700.css";
 import "./style.css";
 import { createAnalyzer } from "./analysis.js";
-import { setVolume, silenceDrones, RAGAS, setScaleOverride, startRecording, stopRecordingAsWav } from "./audio.js";
+import { withVoices, setVolume, silenceDrones, RAGAS, setScaleOverride, startRecording, stopRecordingAsWav } from "./audio.js";
 import { setView, clearRipples, setMarkers } from "./ripples.js";
 import { createEonet, events } from "./eonet.js";
 import { setOverlayRecord, toggleOverlay, drawOverlay } from "./overlay.js";
@@ -34,7 +34,20 @@ const stage = $("stage"), pad = $("probe-pad");
 
 async function unlockAudio() {
   if (!audioReady) { await Tone.start(); audioReady = true; } // only ever from a user action
-  rec.v ||= rec.voices();
+  ensureVoices();
+}
+// Only the current record's instruments exist; the previous record's are freed on switch.
+let voiceSet = null;
+function ensureVoices() {
+  if (rec.v) return;
+  voiceSet = withVoices(() => rec.voices());
+  rec.v = voiceSet.v;
+}
+function freeVoices(old) {
+  if (!old?.v || !voiceSet) return;
+  const vs = voiceSet;
+  old.v = null; voiceSet = null;
+  setTimeout(() => vs.dispose(), 1500); // let release tails finish
 }
 // EONET markers, cached as map coords for lon/lat records (no allocation in the probe tick).
 let markers = [];
@@ -78,6 +91,7 @@ async function select(i) {
   const next = RECORDS[i];
   if (next === rec) return;
   const wasPlaying = !video.paused;
+  freeVoices(rec);
   rec = next;
   silenceDrones();
   clearRipples();
@@ -87,7 +101,7 @@ async function select(i) {
   probe.setRecord(rec);
   caption.textContent = "";
   transport.bpm.value = rec.bpm;
-  if (audioReady) rec.v ||= rec.voices();
+  if (audioReady) ensureVoices();
 
   allButtons().forEach((b, k) => b.setAttribute("aria-pressed", String(k === i)));
   refreshMarkers();

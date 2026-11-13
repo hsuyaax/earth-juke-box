@@ -10,7 +10,7 @@ export default {
   blurb: "Dust, smoke, and sea salt drifting around the planet.",
   svs: 5552, // flat-map version of the GEOS aerosol visualization (also SVS 5572, 5669)
   credit: "NASA's Scientific Visualization Studio, GEOS model by NASA's Global Modeling and Assimilation Office",
-  clip: "/clips/aerosols.mp4",
+  clip: "clips/aerosols.mp4",
   mapArea: null, // full frame is a 2:1 world map, -180..180
   lonlat: true,
   grid: [96, 48],

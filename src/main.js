@@ -68,7 +68,7 @@ const shelf = $("shelf"), shelfMore = $("shelf-more");
 RECORDS.forEach((r, i) => {
   const li = document.createElement("li");
   const k = keyOf(i);
-  li.innerHTML = `<button aria-pressed="false" aria-keyshortcuts="${k}"><img class="disc" src="/discs/${r.id}.jpg" alt=""><span class="t">${k}. ${r.title}</span><span class="d">${r.blurb}</span></button>`;
+  li.innerHTML = `<button aria-pressed="false" aria-keyshortcuts="${k}"><img class="disc" src="discs/${r.id}.jpg" alt=""><span class="t">${k}. ${r.title}</span><span class="d">${r.blurb}</span></button>`;
   li.firstChild.addEventListener("click", () => select(i));
   (i < FEATURED.length ? shelf : shelfMore).append(li);
 });

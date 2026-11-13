@@ -10,7 +10,7 @@ export default {
   blurb: "Every flash is a drum hit you can place by ear.",
   svs: 5011,
   credit: "NASA's Scientific Visualization Studio",
-  clip: "/clips/lightning.mp4", // flat world map version (iss_lightning_sos_yearly), 40 s from 0:10
+  clip: "clips/lightning.mp4", // flat world map version (iss_lightning_sos_yearly), 40 s from 0:10
   mapArea: null, // full frame is the 2:1 world map
   grid: [96, 48],
   bpm: 96,

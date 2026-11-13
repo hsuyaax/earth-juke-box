@@ -11,7 +11,7 @@ export default {
   blurb: "Warm and cold water, and how fast the sea is moving.",
   svs: 3912,
   credit: "NASA/Goddard Space Flight Center Scientific Visualization Studio",
-  clip: "/clips/currents.mp4",
+  clip: "clips/currents.mp4",
   mapArea: null, // full frame is the 2:1 world map
   grid: [96, 48],
   bpm: 96,

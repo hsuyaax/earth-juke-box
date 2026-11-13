@@ -58,14 +58,14 @@ export function bside({ id, title, blurb, svs, credit, clip, shows, artistic, gr
 
 const SVS = "NASA's Scientific Visualization Studio";
 export const BSIDES = [
-  bside({ id: "co2", title: "DYAMOND Carbon Dioxide", blurb: "CO2 plumes swirling over North America.", svs: 5196, credit: SVS, clip: "/clips/co2.mp4", artistic: true,
+  bside({ id: "co2", title: "DYAMOND Carbon Dioxide", blurb: "CO2 plumes swirling over North America.", svs: 5196, credit: SVS, clip: "clips/co2.mp4", artistic: true,
     shows: "Carbon dioxide from the DYAMOND global model run, zooming into North America: orange is higher CO2 from cities and fires, tan the background CO2 carried by winds." }),
-  bside({ id: "airquality", title: "Air Quality Model Runs", blurb: "Four pollutants side by side.", svs: 5533, credit: SVS, clip: "/clips/airquality.mp4", artistic: true,
+  bside({ id: "airquality", title: "Air Quality Model Runs", blurb: "Four pollutants side by side.", svs: 5533, credit: SVS, clip: "clips/airquality.mp4", artistic: true,
     shows: "NASA GEOS air-quality forecasts shown as strips of carbon monoxide, ozone, nitrogen dioxide, and fine particles across the world." }),
-  bside({ id: "perpetualocean", title: "Perpetual Ocean 2", blurb: "Western boundary currents, by temperature.", svs: 5425, credit: SVS, clip: "/clips/perpetualocean.mp4", artistic: true,
+  bside({ id: "perpetualocean", title: "Perpetual Ocean 2", blurb: "Western boundary currents, by temperature.", svs: 5425, credit: SVS, clip: "clips/perpetualocean.mp4", artistic: true,
     shows: "Ocean surface currents on a turning globe, colored by temperature, focusing on fast western boundary currents like the Gulf Stream." }),
-  bside({ id: "atmosriver", title: "Atmospheric River", blurb: "A river of water vapor hits the coast.", svs: 4960, credit: SVS, clip: "/clips/atmosriver.mp4", artistic: true,
+  bside({ id: "atmosriver", title: "Atmospheric River", blurb: "A river of water vapor hits the coast.", svs: 4960, credit: SVS, clip: "clips/atmosriver.mp4", artistic: true,
     shows: "A 3D view of an atmospheric river from a NASA Earth system model: a long band of water vapor flowing toward North America's west coast." }),
-  bside({ id: "gedi", title: "GEDI Forest Height", blurb: "How tall the world's forests are.", svs: 4950, credit: SVS, clip: "/clips/gedi.mp4", artistic: true,
+  bside({ id: "gedi", title: "GEDI Forest Height", blurb: "How tall the world's forests are.", svs: 4950, credit: SVS, clip: "clips/gedi.mp4", artistic: true,
     shows: "Forest canopy height measured by the GEDI lidar on the International Space Station, on a turning globe: brighter green is taller forest." }),
 ];

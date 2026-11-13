@@ -10,7 +10,7 @@ export default {
   blurb: "Where the world is lit, and where it gained or lost light.",
   svs: 5313,
   credit: "NASA's Scientific Visualization Studio",
-  clip: "/clips/nightlights.mp4",
+  clip: "clips/nightlights.mp4",
   mapArea: null, // clip is pre-cropped to one world map (left half of the EIC frame)
   grid: [128, 72],
   bpm: 96,

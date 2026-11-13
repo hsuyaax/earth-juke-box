@@ -5,15 +5,21 @@ import "@fontsource/atkinson-hyperlegible/700.css";
 import "@fontsource/bricolage-grotesque/700.css";
 import "./style.css";
 import { createAnalyzer } from "./analysis.js";
-import { setVolume, silenceDrones } from "./audio.js";
-import { setView, clearRipples } from "./ripples.js";
+import { setVolume, silenceDrones, RAGAS, setScaleOverride, startRecording, stopRecordingAsWav } from "./audio.js";
+import { setView, clearRipples, setMarkers } from "./ripples.js";
+import { createEonet, events } from "./eonet.js";
 import { setOverlayRecord, toggleOverlay, drawOverlay } from "./overlay.js";
 import { createProbe } from "./explore.js";
 import lightning from "./records/lightning.js";
 import nightlights from "./records/nightlights.js";
 import currents from "./records/currents.js";
+import aerosols from "./records/aerosols.js";
+import { BSIDES } from "./records/bside.js";
+import today from "./records/today.js";
 
-const RECORDS = [lightning, nightlights, currents];
+const FEATURED = [lightning, nightlights, currents];
+const RECORDS = [...FEATURED, aerosols, ...BSIDES, today]; // keys 1-9, then 0
+const keyOf = (i) => (i === 9 ? "0" : String(i + 1));
 const $ = (id) => document.getElementById(id);
 const video = $("video"), playBtn = $("play"), scrub = $("scrub"), status = $("status");
 const analyzer = createAnalyzer(video);
@@ -30,7 +36,18 @@ async function unlockAudio() {
   if (!audioReady) { await Tone.start(); audioReady = true; } // only ever from a user action
   rec.v ||= rec.voices();
 }
-const probe = createProbe({ stage, video, state, isAudioReady: () => audioReady, announce: say });
+// EONET markers, cached as map coords for lon/lat records (no allocation in the probe tick).
+let markers = [];
+function refreshMarkers() {
+  markers = rec?.lonlat ? events.map((e) => ({ ...e, xy: eonet.toXY(e) })) : [];
+  setMarkers(markers.map((m) => m.xy));
+}
+const eonet = createEonet({
+  list: $("eonet-list"), status: $("eonet-status"), announce: say,
+  canPlay: () => audioReady, onChange: refreshMarkers,
+});
+const probe = createProbe({ stage, video, state, isAudioReady: () => audioReady, announce: say,
+  getMarkers: () => markers, playMarker: (m) => { eonet.play(m); say(`${m.word}: ${m.title}`); } });
 const fmt = (t) => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, "0")}`;
 
 // Two clocks: analysis writes features ~15x/s; the beat clock reads them.
@@ -47,15 +64,17 @@ transport.scheduleRepeat((time) => {
 }, "8n");
 
 // ---- records ----
-const shelf = $("shelf");
+const shelf = $("shelf"), shelfMore = $("shelf-more");
 RECORDS.forEach((r, i) => {
   const li = document.createElement("li");
-  li.innerHTML = `<button aria-pressed="false" aria-keyshortcuts="${i + 1}"><img class="disc" src="/discs/${r.id}.jpg" alt=""><span class="t">${i + 1}. ${r.title}</span><span class="d">${r.blurb}</span></button>`;
+  const k = keyOf(i);
+  li.innerHTML = `<button aria-pressed="false" aria-keyshortcuts="${k}"><img class="disc" src="/discs/${r.id}.jpg" alt=""><span class="t">${k}. ${r.title}</span><span class="d">${r.blurb}</span></button>`;
   li.firstChild.addEventListener("click", () => select(i));
-  shelf.append(li);
+  (i < FEATURED.length ? shelf : shelfMore).append(li);
 });
+const allButtons = () => document.querySelectorAll(".shelf button");
 
-function select(i) {
+async function select(i) {
   const next = RECORDS[i];
   if (next === rec) return;
   const wasPlaying = !video.paused;
@@ -70,16 +89,19 @@ function select(i) {
   transport.bpm.value = rec.bpm;
   if (audioReady) rec.v ||= rec.voices();
 
-  shelf.querySelectorAll("button").forEach((b, k) => b.setAttribute("aria-pressed", String(k === i)));
+  allButtons().forEach((b, k) => b.setAttribute("aria-pressed", String(k === i)));
+  refreshMarkers();
   $("notes-title").textContent = rec.title;
   $("notes-shows").textContent = rec.notes.shows;
   $("notes-hear").textContent = rec.notes.hear;
   $("notes-listen").textContent = rec.notes.listen;
-  $("notes-credit").innerHTML = `Visualization: ${rec.credit}. <a href="https://svs.gsfc.nasa.gov/${rec.svs}/">SVS ${rec.svs}</a>. This is a sonification of the visualization, not of the raw data.`;
+  const src = rec.svs ? `<a href="https://svs.gsfc.nasa.gov/${rec.svs}/">SVS ${rec.svs}</a>` : `<a href="${rec.link}">${rec.link}</a>`;
+  $("notes-credit").innerHTML = `Visualization: ${rec.credit}. ${src}. This is a sonification of the visualization, not of the raw data.`;
   video.setAttribute("aria-label", `${rec.title} visualization`);
 
   $("loading").hidden = false;
-  video.src = rec.clip;
+  $("loading").textContent = rec.live ? "Fetching today's image from NASA…" : "Loading clip…";
+  scrub.disabled = !!rec.live;
   video.addEventListener("loadedmetadata", () => {
     setView(rec.mapArea || { x: 0, y: 0, w: video.videoWidth, h: video.videoHeight }, video.videoWidth, video.videoHeight);
     setOverlayRecord(rec, video.videoWidth, video.videoHeight);
@@ -89,6 +111,17 @@ function select(i) {
     if (wasPlaying) play();
   }, { once: true });
   say(`${rec.title} selected.${wasPlaying ? "" : " Press Play."}`);
+  if (!rec.live) { video.srcObject = null; video.src = rec.clip; return; }
+  const mine = rec;
+  video.removeAttribute("src");
+  try {
+    const { stream } = await rec.live();
+    if (rec !== mine) return; // user switched away meanwhile
+    video.srcObject = stream;
+    $("notes-shows").textContent = rec.notes.shows;
+  } catch {
+    if (rec === mine) $("loading").textContent = "Could not load today's image from NASA GIBS. Try again later.";
+  }
 }
 
 // ---- playback ----
@@ -123,8 +156,8 @@ playBtn.addEventListener("click", toggle);
 // ---- scrub, time, volume, overlay ----
 video.addEventListener("timeupdate", () => {
   const d = video.duration || 0;
-  if (!scrubbing && d) scrub.value = Math.round((video.currentTime / d) * 1000);
-  const label = `${fmt(video.currentTime)} / ${fmt(d)}`;
+  if (!scrubbing && isFinite(d) && d) scrub.value = Math.round((video.currentTime / d) * 1000);
+  const label = isFinite(d) ? `${fmt(video.currentTime)} / ${fmt(d)}` : "Live image";
   $("time").textContent = label;
   scrub.setAttribute("aria-valuetext", label);
 });
@@ -163,11 +196,43 @@ pad.querySelectorAll("[data-move]").forEach((b) => b.addEventListener("click", (
 $("describe").addEventListener("click", () => { unlockAudio(); probe.describe(); });
 $("legend-btn").addEventListener("click", async () => { await unlockAudio(); probe.legend((t) => { caption.textContent = t; }); });
 
+// ---- scale presets (experimental) ----
+const scaleSel = $("scale");
+for (const [id, r] of Object.entries(RAGAS)) scaleSel.add(new Option(r.name, id));
+scaleSel.addEventListener("change", () => {
+  setScaleOverride(RAGAS[scaleSel.value]?.notes || null);
+  say(scaleSel.value ? `${RAGAS[scaleSel.value].name} on. Experimental.` : "Default scales.");
+});
+
+// ---- WAV export ----
+const wavBtn = $("wav-btn");
+let recTimer = null;
+async function finishRecording() {
+  clearTimeout(recTimer); recTimer = null;
+  wavBtn.textContent = "Saving…";
+  const blob = await stopRecordingAsWav();
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `earth-jukebox-${rec.id}.wav`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  wavBtn.textContent = "Save 20 s as WAV";
+  say("Recording saved.");
+}
+wavBtn.addEventListener("click", async () => {
+  if (recTimer) return finishRecording();
+  await play();
+  await startRecording();
+  wavBtn.textContent = "Stop and save";
+  say("Recording 20 seconds.");
+  recTimer = setTimeout(finishRecording, 20000);
+});
+
 // ---- keyboard ----
 document.addEventListener("keydown", (e) => {
   if (e.ctrlKey || e.metaKey || e.altKey) return;
   if (e.key === " ") { e.preventDefault(); toggle(); }
-  else if (e.key >= "1" && e.key <= String(RECORDS.length)) select(+e.key - 1);
+  else if (/^[0-9]$/.test(e.key) && !["INPUT", "SELECT"].includes(e.target.tagName)) select(e.key === "0" ? 9 : +e.key - 1);
   else if (e.key === "o" || e.key === "O") flipOverlay();
   else if (e.key === "Escape") {
     if (video.paused) return say("Stopped all sound.");

@@ -18,8 +18,27 @@ export function noteAt(t, scale, root = 48, octaves = 3) {
   return Tone.Frequency(midi, "midi").toFrequency();
 }
 
+// Filtered-noise voice with a pitch: the bandpass centre follows the note, so pitch = height still holds.
+function noiseVoice(type, Q, attack, release, volume) {
+  return () => {
+    const out = new Tone.Volume(volume);
+    const env = new Tone.AmplitudeEnvelope({ attack, decay: 0.1, sustain: 0.7, release }).connect(out);
+    const bp = new Tone.Filter({ type: "bandpass", Q }).connect(env);
+    new Tone.Noise(type).connect(bp).start();
+    return {
+      connect(node) { out.connect(node); return this; },
+      triggerAttackRelease(freq, dur, time, vel = 1) { bp.frequency.setValueAtTime(freq, time); env.triggerAttackRelease(dur, time, vel); },
+    };
+  };
+}
+
 // Sound families (AGENTS.md §8): one timbre per meaning, identical in every record.
 export const FAMILY = {
+  dust: noiseVoice("white", 3, 0.02, 0.3, -6),     // gritty filtered noise
+  smoke: noiseVoice("brown", 1.2, 0.08, 0.5, -2),  // muffled low breathy tone
+  salt: noiseVoice("white", 9, 0.04, 0.4, -10),    // airy high hiss
+  neutral: () => new Tone.Synth({ oscillator: { type: "sine" }, envelope: { attack: 0.02, decay: 0.6, sustain: 0.1, release: 0.6 }, volume: -10 }), // B-side default
+  alert: () => new Tone.Synth({ oscillator: { type: "square" }, envelope: { attack: 0.005, decay: 0.15, sustain: 0, release: 0.1 }, volume: -18 }), // EONET
   crack: () => new Tone.MembraneSynth({ octaves: 2, envelope: { attack: 0.001, decay: 0.2, sustain: 0, release: 0.1 }, volume: -6 }),
   warm: () => new Tone.Synth({ oscillator: { type: "triangle" }, envelope: { attack: 0.06, decay: 0.3, sustain: 0.3, release: 0.8 }, volume: -10 }),
   cold: () => new Tone.FMSynth({ harmonicity: 3.5, modulationIndex: 4, envelope: { attack: 0.002, decay: 0.8, sustain: 0, release: 0.6 }, volume: -14 }),
@@ -27,7 +46,17 @@ export const FAMILY = {
   pluckB: () => new Tone.Synth({ oscillator: { type: "sine" }, envelope: { attack: 0.01, decay: 0.7, sustain: 0, release: 0.5 }, volume: -8 }),
 };
 // One color per voice; ripples use it.
-export const COLORS = { crack: "#FFF3B0", warm: "#FF6B6B", cold: "#5CC8FF", pluckA: "#9B7BFF", pluckB: "#FF8A3D", light: "#FFC25C" };
+export const COLORS = { crack: "#FFF3B0", warm: "#FF6B6B", cold: "#5CC8FF", pluckA: "#9B7BFF", pluckB: "#FF8A3D", light: "#FFC25C", dust: "#C39BDB", smoke: "#D2604A", salt: "#86AAA8", neutral: "#F4EFE6", alert: "#FF5C5C" };
+
+// Scale presets are data (D7). Ragas are experimental until a teammate with a musical ear approves them.
+export const RAGAS = {
+  bhupali: { name: "Raga Bhupali (calm)", notes: [0, 2, 4, 7, 9] },
+  durga: { name: "Raga Durga (calm)", notes: [0, 2, 5, 7, 9] },
+  malkauns: { name: "Raga Malkauns (tense)", notes: [0, 3, 5, 8, 10] },
+  yaman: { name: "Raga Yaman (evening)", notes: [0, 2, 4, 6, 7, 9, 11] },
+};
+let scaleOverride = null;
+export function setScaleOverride(notes) { scaleOverride = notes; }
 
 // A pool of one instrument. play(x, y, vel, dur, time): x,y are 0..1 map coords.
 // Position drives pan (x), pitch (y), and the ripple, so sound and picture can't drift apart.
@@ -40,7 +69,7 @@ export function makePool(makeSynth, { color, scale, root = 48, octaves = 3, size
   return (x, y, vel, dur, time, rippleColor = color) => {
     const v = voices[n++ % size];
     v.pan.pan.setValueAtTime(x * 2 - 1, time);
-    v.synth.triggerAttackRelease(noteAt(1 - y, scale, root, octaves), dur, time, vel);
+    v.synth.triggerAttackRelease(noteAt(1 - y, scaleOverride || scale, root, octaves), dur, time, vel);
     Tone.getDraw().schedule(() => addRipple(x, y, rippleColor, vel), time);
   };
 }
@@ -65,3 +94,32 @@ export function makeDrone(source, { cutoff = 800, pan = 0, out = musicBus } = {}
 export function silenceDrones() { drones.forEach((d) => d.silence()); }
 
 export function setVolume(v) { master.gain.rampTo(v, 0.05); }
+
+// ---- WAV export: tap the master, record, re-encode as 16-bit PCM WAV ----
+let recorder;
+export async function startRecording() {
+  recorder ||= new Tone.Recorder();
+  master.connect(recorder);
+  await recorder.start();
+}
+export async function stopRecordingAsWav() {
+  const blob = await recorder.stop();
+  master.disconnect(recorder);
+  const buf = await Tone.getContext().rawContext.decodeAudioData(await blob.arrayBuffer());
+  return encodeWav(buf);
+}
+export function encodeWav(buf) {
+  const ch = buf.numberOfChannels, len = buf.length, rate = buf.sampleRate;
+  const view = new DataView(new ArrayBuffer(44 + len * ch * 2));
+  const str = (o, t) => [...t].forEach((c, i) => view.setUint8(o + i, c.charCodeAt(0)));
+  str(0, "RIFF"); view.setUint32(4, 36 + len * ch * 2, true); str(8, "WAVEfmt ");
+  view.setUint32(16, 16, true); view.setUint16(20, 1, true); view.setUint16(22, ch, true);
+  view.setUint32(24, rate, true); view.setUint32(28, rate * ch * 2, true); view.setUint16(32, ch * 2, true); view.setUint16(34, 16, true);
+  str(36, "data"); view.setUint32(40, len * ch * 2, true);
+  const data = Array.from({ length: ch }, (_, c) => buf.getChannelData(c));
+  for (let i = 0, o = 44; i < len; i++) for (let c = 0; c < ch; c++, o += 2) {
+    const v = Math.max(-1, Math.min(1, data[c][i]));
+    view.setInt16(o, v < 0 ? v * 0x8000 : v * 0x7fff, true);
+  }
+  return new Blob([view], { type: "audio/wav" });
+}

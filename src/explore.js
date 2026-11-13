@@ -7,13 +7,16 @@ import { setProbe } from "./ripples.js";
 const TICK = 0.066; // s, matches the analysis interval
 const HOLD = 2; // ticks a new sustained class must hold before the voice switches
 const SAY_EVERY = 1500; // ms between class-change announcements
-const SOUND_WORDS = { crack: "a sharp drum hit", warm: "a soft flute", cold: "a glassy bell", pluckA: "a bright pluck", pluckB: "a soft, round pluck" };
+const SOUND_WORDS = { neutral: "a soft bell-like tone", dust: "gritty noise", smoke: "a low, breathy rush", salt: "an airy hiss", crack: "a sharp drum hit", warm: "a soft flute", cold: "a glassy bell", pluckA: "a bright pluck", pluckB: "a soft, round pluck" };
+const SPATIAL = 0.04; // paused flash: brightest of the 3x3 above the 5x5 ring by this much (V); median lightning cell measured 0.039
+const BUZZ = { event: [30], sustained: [15, 40, 15] }; // phone vibration per kind (P2, enhancement only)
 const ROWS = ["upper", "middle", "lower"], COLS = ["left", "center", "right"];
 
-export function createProbe({ stage, video, state, getRecord, isAudioReady, announce }) {
+export function createProbe({ stage, video, state, isAudioReady, announce, getMarkers = () => [], playMarker = () => {} }) {
   let cx = 0, cy = 0, rec = null;
   let pointerIn = false, focusIn = false;
   let pendingSay = "", current = 0, candidate = 0, held = 0, phase = 0, eventCool = 0, lastSaid = 0;
+  let markerCool = 0;
   const pools = {}; // `${rec.id}:${family}` -> pool (scale differs per record)
   let room, edge, counts, ducked = false, roomOn = false;
   const setDuck = (on) => { if (on !== ducked) duck((ducked = on)); };
@@ -50,23 +53,37 @@ export function createProbe({ stage, video, state, getRecord, isAudioReady, anno
   function read() {
     const { W, H, cls, v, motion, jump } = state;
     counts.fill(0);
-    let sum = 0, n = 0, flash = false;
+    let sum = 0, n = 0, flash = false, peak = 0;
     for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
       const x = cx + dx, y = cy + dy;
       if (x < 0 || y < 0 || x >= W || y >= H) continue;
       const i = y * W + x;
       counts[cls[i]]++;
+      if (v[i] > peak) peak = v[i];
       sum += rec.probe.amount === "motion" ? motion[i] : v[i];
       if (rec.flash && jump[i] >= rec.flash.jump && cls[i]) flash = true;
       n++;
     }
+    // Spatial detector (used while paused): centre much brighter than the 5x5 ring around it.
+    let ring = 0, rn = 0;
+    for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) {
+      if (Math.abs(dx) < 2 && Math.abs(dy) < 2) continue;
+      const x = cx + dx, y = cy + dy;
+      if (x < 0 || y < 0 || x >= W || y >= H) continue;
+      ring += v[y * W + x]; rn++;
+    }
+    const spatial = rn > 0 && peak - ring / rn > SPATIAL;
     let c = 0;
     for (let k = 1; k < counts.length; k++) if (counts[k] > counts[c] || (c === 0 && counts[k] >= 3)) c = k;
     const avg = sum / n;
     const amount = rec.probe.amount === "motion" ? Math.min(1, avg / rec.probe.full) : Math.max(0, Math.min(1, (avg - 0.05) / 0.45));
-    return { c, amount, flash };
+    return { c, amount, flash, spatial };
   }
 
+  function nearMarker() {
+    const [W, H] = rec.grid;
+    return getMarkers().find((m) => { const [x, y] = m.xy; return Math.abs(x * W - cx - 0.5) <= 2 && Math.abs(y * H - cy - 0.5) <= 2; });
+  }
   const label = (c) => (c ? rec.classes[c - 1].label : "nothing");
   const words = () => rec.probe.words || ["faint", "medium", "strong"];
   const amountWord = (a) => words()[a < 0.33 ? 0 : a < 0.66 ? 1 : 2];
@@ -75,7 +92,9 @@ export function createProbe({ stage, video, state, getRecord, isAudioReady, anno
   function describe() {
     if (!rec || !state.ready) return;
     const { c, amount } = read();
-    announce(c ? `${label(c)}, ${amountWord(amount)}, ${where()}.` : `Nothing here, ${where()}.`);
+    const mk = rec.lonlat && nearMarker();
+    const ev = mk ? ` Event here: ${mk.word}, ${mk.title}.` : "";
+    announce((c ? `${label(c)}, ${amountWord(amount)}, ${where()}.` : `Nothing here, ${where()}.`) + ev);
   }
 
   function silence() { setRoom(false); setDuck(false); }
@@ -102,12 +121,19 @@ export function createProbe({ stage, video, state, getRecord, isAudioReady, anno
       eventCool = 3;
     }
     if (playing && kind === "event") c = 0;
+    if (!playing && kind === "event" && !r.spatial) c = 0; // paused: only a real bright spot counts as a flash
+
+    // EONET markers under the probe play their alert sound (records on a lon/lat map only).
+    if (markerCool) markerCool--;
+    const mk = rec.lonlat && nearMarker();
+    if (mk && !markerCool) { playMarker(mk); markerCool = 20; }
 
     // Sustained classes: hysteresis, then a soft edge tick and the new voice.
     if (c === current) { held = 0; candidate = c; }
     else if (c === candidate && ++held >= HOLD) {
       current = c; held = 0; phase = 1;
       edge(x, 0.5, 0.3, 0.03, Tone.now());
+      if (current && navigator.vibrate) navigator.vibrate(BUZZ[rec.classes[current - 1].kind]);
       pendingSay = current ? `${label(current)}, ${amountWord(r.amount)}` : "nothing";
     } else if (c !== candidate) { candidate = c; held = 1; }
     // Throttled announcements are delayed, never dropped: the latest class always gets said.

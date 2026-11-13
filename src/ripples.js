@@ -11,6 +11,8 @@ let probe = null; // { x0, y0, x1, y1 } in map coords, or null
 export function setView(mapArea, vw, vh) { view = { ...mapArea, vw, vh }; ripples = []; playhead = null; }
 export function setPlayhead(x) { playhead = x; }
 export function setProbe(box) { probe = box; }
+let markers = []; // [[x, y], ...] map coords of EONET events
+export function setMarkers(m) { markers = m; }
 export function clearRipples() { ripples = []; playhead = null; }
 
 // Map coords (0..1 inside the map area) -> canvas px.
@@ -41,6 +43,11 @@ function frame(now) {
     const [, bot] = toCanvas(0, 1);
     g.fillStyle = "rgba(244,239,230,0.35)";
     g.fillRect(px, top, Math.max(1, devicePixelRatio), bot - top);
+  }
+  g.fillStyle = "#FF5C5C";
+  for (const [mx, my] of markers) {
+    const [px, py] = toCanvas(mx, my), r = Math.max(4, unit * 0.25);
+    g.beginPath(); g.moveTo(px, py - r); g.lineTo(px + r, py); g.lineTo(px, py + r); g.lineTo(px - r, py); g.closePath(); g.fill();
   }
   if (probe) {
     const [ax, ay] = toCanvas(probe.x0, probe.y0), [bx, by] = toCanvas(probe.x1, probe.y1);

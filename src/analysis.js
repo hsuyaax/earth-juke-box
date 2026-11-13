@@ -46,6 +46,7 @@ export function createAnalyzer(video) {
       motion: new Float32Array(n), avg: new Float32Array(n), jump: new Float32Array(n),
       cool: new Uint8Array(n), cls: new Uint8Array(n),
       classFrac: new Float32Array(k), classFracS: new Float32Array(k),
+      hueHist: new Float32Array(12), hueHistS: new Float32Array(12), bx: 0.5, by: 0.5, // sat-weighted hue bins; brightness centroid
       flashes: Array.from({ length: MAX_FLASHES }, () => ({ x: 0, y: 0, power: 0 })),
       nFlashes: 0, flashRate: 0, mean: 0, meanS: 0, meanMotion: 0, motionS: 0, ready: false,
     });
@@ -71,7 +72,9 @@ export function createAnalyzer(video) {
     const px = g.getImageData(0, 0, W, H).data;
 
     classFrac.fill(0);
-    let sum = 0, msum = 0, mcount = 0;
+    const hh12 = state.hueHist;
+    hh12.fill(0);
+    let sum = 0, msum = 0, mcount = 0, bxs = 0, bys = 0;
     const hasClasses = rec.classes.length > 0;
     for (let i = 0, p = 0; i < W * H; i++, p += 4) {
       hsv(px[p], px[p + 1], px[p + 2]);
@@ -82,6 +85,8 @@ export function createAnalyzer(video) {
       const c = (cls[i] = classify(rec.classes, hh, ss, vv));
       classFrac[c]++;
       sum += vv;
+      hh12[Math.floor(hh / 30) % 12] += ss * vv;
+      bxs += vv * (i % W); bys += vv * Math.floor(i / W);
       if (!hasClasses || c) { msum += motion[i]; mcount++; }
       jump[i] = reset ? 0 : vv - avg[i];
       avg[i] = reset ? vv : avg[i] + (rec.flash?.avgRate ?? 0.1) * (vv - avg[i]);
@@ -113,6 +118,8 @@ export function createAnalyzer(video) {
       state.classFracS[k] += 0.1 * (classFrac[k] - state.classFracS[k]);
     }
     state.mean = sum / n;
+    if (sum > 0) { state.bx = (bxs / sum + 0.5) / W; state.by = (bys / sum + 0.5) / H; }
+    for (let k = 0; k < 12; k++) state.hueHistS[k] += (reset ? 1 : 0.1) * (hh12[k] / n - state.hueHistS[k]);
     state.meanMotion = mcount ? msum / mcount : 0;
     if (reset) { state.meanS = state.mean; state.motionS = 0; state.classFracS.set(classFrac); }
     else {

@@ -35,8 +35,14 @@
       </label>
       <button id="legend-btn">Learn the sounds</button>
       <button id="overlay-btn" aria-pressed="false" aria-keyshortcuts="O">What the engine sees</button>
+      <button id="wav-btn">Save 20 s as WAV</button>
+      <label class="vol">
+        <span>Scale</span>
+        <select id="scale"><option value="">Default (pentatonic)</option></select>
+      </label>
     </div>
-    <p class="keys">Keys: <kbd>Space</kbd> play or pause · <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> pick a record · <kbd>O</kbd> what the engine sees · arrows explore the map · <kbd>D</kbd> describe · <kbd>Esc</kbd> stop all sound</p>
+    <p class="small">Raga scales are experimental and not yet approved by a musician.</p>
+    <p class="keys">Keys: <kbd>Space</kbd> play or pause · <kbd>1</kbd>–<kbd>9</kbd>, <kbd>0</kbd> pick a record · <kbd>O</kbd> what the engine sees · arrows explore the map · <kbd>D</kbd> describe · <kbd>Esc</kbd> stop all sound</p>
 
     <div class="probe-pad" id="probe-pad" role="group" aria-labelledby="probe-h">
       <h2 id="probe-h" class="pad-h">Explore by touch</h2>
@@ -54,6 +60,9 @@
       <section aria-labelledby="shelf-h">
         <h2 id="shelf-h">Records</h2>
         <ul class="shelf" id="shelf"></ul>
+        <h3>More records</h3>
+        <p class="small">B-sides use one default mapping. Some move the camera, so they are artistic, not geographic.</p>
+        <ul class="shelf" id="shelf-more"></ul>
       </section>
       <section class="notes" aria-labelledby="notes-title">
         <h2 id="notes-title"></h2>
@@ -68,9 +77,17 @@
     </div>
   </main>
 
+  <section class="eonet" aria-labelledby="eonet-h">
+    <h2 id="eonet-h">Live: natural events from NASA EONET</h2>
+    <p class="small"><strong>This is not a warning system.</strong> The feed can lag by hours or days. For warnings, follow your local authorities or <a href="https://www.gdacs.org/">GDACS</a>. Events show as red diamonds on the lightning, aerosol, and Earth Today maps; the probe plays a short alert when it touches one.</p>
+    <p id="eonet-status" class="small">Loading events…</p>
+    <ul id="eonet-list" class="eonet-list"></ul>
+  </section>
+
   <div id="status" class="sr" role="status" aria-live="polite"></div>
 
   <footer>
+    <p><a href="/about.html">About this project: how it works, who it helps, test results, and sources</a>.</p>
     <p><strong>Not an official NASA product.</strong> A sonification of NASA visualizations; values read from colors are approximate. Clips courtesy of NASA's Scientific Visualization Studio.</p>
   </footer>
   <script type="module" src="/src/main.js"></script>

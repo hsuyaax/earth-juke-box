@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About Earth Jukebox</title>
+  <meta name="description" content="How Earth Jukebox turns NASA Earth visualizations into live, explorable music." />
+  <style>
+    :root { --bg: #0d1b3d; --text: #f4efe6; --muted: #c9c3ba; --accent: #ffc25c; --line: #2a3a63; color-scheme: dark; }
+    body { margin: 0; background: var(--bg); color: var(--text); font: 18px/1.6 "Atkinson Hyperlegible", system-ui, sans-serif; }
+    main { max-width: 760px; margin: 0 auto; padding: 24px 16px 48px; }
+    h1, h2 { font-family: "Bricolage Grotesque", system-ui, sans-serif; }
+    h2 { margin-top: 40px; font-size: 1.3rem; }
+    a { color: var(--accent); }
+    :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+    table { border-collapse: collapse; width: 100%; font-size: 0.95rem; }
+    th, td { border-bottom: 1px solid var(--line); padding: 8px 6px; text-align: left; vertical-align: top; }
+    .note { color: var(--muted); }
+    .table-wrap { overflow-x: auto; }
+  </style>
+  <script type="module">
+    import "@fontsource/atkinson-hyperlegible/400.css";
+    import "@fontsource/atkinson-hyperlegible/700.css";
+    import "@fontsource/bricolage-grotesque/700.css";
+  </script>
+</head>
+<body>
+<main>
+  <p><a href="/">← Back to the jukebox</a></p>
+  <h1>Earth Jukebox</h1>
+  <p>Hear the planet. Every sound comes from the NASA picture, at the place it happened.</p>
+  <p class="note"><strong>Not an official NASA product.</strong> A sonification of NASA visualizations, not of the raw data. Values read from colors are approximate.</p>
+
+  <h2>The problem</h2>
+  <p>NASA's Earth Information Center shows the planet through beautiful moving pictures: lightning, city lights, ocean currents, smoke and dust. All of it is visual. People who are blind or have low vision get, at best, a sentence of description. The challenge asked for an interface that pairs these frames with sound generated in real time, so the pictures can be experienced and explored by ear.</p>
+
+  <h2>What it does</h2>
+  <ul>
+    <li><strong>Plays the picture.</strong> Pick a record; the browser reads every frame of the NASA video about 15 times a second and turns what it sees into music on a steady beat.</li>
+    <li><strong>Explore by touch.</strong> Move a finger, mouse, or the arrow keys over the map and hear what is under it: the instrument says what it is, the pulse says how much, pitch and stereo say where. Press D for a spoken description. Works while playing and while paused.</li>
+    <li><strong>See the sound.</strong> Every note draws a ripple on the map where it came from, in its instrument's color.</li>
+    <li><strong>Learn the sounds</strong> plays each instrument with its name first. Captions describe the music every few seconds.</li>
+    <li><strong>Live Earth.</strong> "Earth Today" plays yesterday's whole planet from NASA GIBS; current natural events from NASA EONET appear as markers the probe can touch.</li>
+  </ul>
+
+  <h2>How the mapping works</h2>
+  <p>One sound language for every record:</p>
+  <div class="table-wrap"><table>
+    <tr><th>Sound</th><th>Means</th></tr>
+    <tr><td>Which instrument</td><td>What it is (lightning, warm water, dust…)</td></tr>
+    <tr><td>Left / right</td><td>Where it is across the map</td></tr>
+    <tr><td>Pitch, snapped to a pentatonic scale</td><td>How high it is on the map</td></tr>
+    <tr><td>Loudness, brightness, pulse speed</td><td>How much of it there is</td></tr>
+  </table></div>
+  <div class="table-wrap"><table>
+    <tr><th>Record</th><th>The engine reads</th><th>You hear</th></tr>
+    <tr><td>Lightning (SVS 5011)</td><td>New yellow lightning dots</td><td>A drum hit per flash; a rumble that grows with the flash rate</td></tr>
+    <tr><td>Night Lights (SVS 5313)</td><td>Lit places and their change color</td><td>A sweep of plucks: bright pluck for light and more light, soft pluck for less light</td></tr>
+    <tr><td>Ocean currents (SVS 3912)</td><td>Warm vs cold water; motion</td><td>A warm pad and a cold bell; a melody that follows the fastest water</td></tr>
+    <tr><td>Aerosols (SVS 5552)</td><td>Dust, smoke, sea-salt colors</td><td>Gritty noise, a low breathy rush, an airy hiss</td></tr>
+    <tr><td>B-sides and Earth Today</td><td>Brightness, strongest color, motion</td><td>Loudness, chord, tempo</td></tr>
+  </table></div>
+  <p>Every color range was measured from the clips with a calibration tool, not guessed. The same frame always gives the same sound; nothing is random.</p>
+
+  <h2>Who it helps</h2>
+  <p>People who are blind or have low vision, first: everything works by keyboard and screen reader, and the map can be explored by touch on a phone. It also helps anyone who learns better by listening, and visitors to a gallery or classroom who want to hear what a visualization is saying.</p>
+
+  <h2>Test results</h2>
+  <p><strong>Not yet run.</strong> We will report the listening test and screen-reader test here exactly as they happen, including how many people took part.</p>
+
+  <h2>Honest limits</h2>
+  <ul>
+    <li>The engine reads rendered pictures, not the scientific data, so amounts are approximate.</li>
+    <li>B-sides with a moving camera are artistic, not geographic: left and right do not stay on one place.</li>
+    <li>EONET alerts are not a warning system and can lag.</li>
+    <li>Raga scale presets are experimental and not yet approved by a musician.</li>
+  </ul>
+
+  <h2>NASA resources</h2>
+  <ul>
+    <li><a href="https://svs.gsfc.nasa.gov/5011/">Lightning from the ISS 2017–2023 (SVS 5011)</a></li>
+    <li><a href="https://svs.gsfc.nasa.gov/5313/">Night Lights 2012–2023 (SVS 5313)</a></li>
+    <li><a href="https://svs.gsfc.nasa.gov/3912/">Sea Surface Currents and Temperature (SVS 3912)</a></li>
+    <li><a href="https://svs.gsfc.nasa.gov/5552/">Aerosols in the Air (SVS 5552)</a>, related to <a href="https://svs.gsfc.nasa.gov/5669/">GEOS Aerosols (SVS 5669)</a></li>
+    <li>B-sides: <a href="https://svs.gsfc.nasa.gov/5196/">DYAMOND CO2 (5196)</a>, <a href="https://svs.gsfc.nasa.gov/5533/">Air Quality Model Runs (5533)</a>, <a href="https://svs.gsfc.nasa.gov/5425/">Perpetual Ocean 2 (5425)</a>, <a href="https://svs.gsfc.nasa.gov/4960/">Atmospheric River (4960)</a>, <a href="https://svs.gsfc.nasa.gov/4950/">GEDI Forest Height (4950)</a></li>
+    <li><a href="https://svs.gsfc.nasa.gov/gallery/earth-information-center/">Earth Information Center gallery</a></li>
+    <li><a href="https://eonet.gsfc.nasa.gov/">NASA EONET</a> and <a href="https://www.earthdata.nasa.gov/engage/open-data-services-software/earthdata-developer-portal/gibs-api">NASA GIBS</a></li>
+    <li>Concept reference: <a href="https://svs.gsfc.nasa.gov/13786/">Data Sonification: Caldwell 73 (SVS 13786)</a></li>
+  </ul>
+
+  <h2>Credits</h2>
+  <p>Visualizations by NASA's Scientific Visualization Studio and NASA/Goddard Space Flight Center. Earth Today imagery from NASA GIBS (MODIS on Terra). Fonts: Atkinson Hyperlegible (Braille Institute) and Bricolage Grotesque. Built with Vite and Tone.js. Built with help from an AI coding assistant (Claude).</p>
+</main>
+</body>
+</html>

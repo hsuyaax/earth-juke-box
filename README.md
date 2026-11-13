@@ -50,7 +50,7 @@ npm test           # WAV encoder self-check
 
 ## How it works
 
-Static site (Vite, Tone.js, Canvas 2D), no backend. Two clocks: an analysis loop reads each frame into a small grid about 15 times a second and writes features; the music clock reads them on every beat. Each record is one settings file plus an `onBeat` function in `src/records/`.
+Static site (Vite, Tone.js, Canvas 2D), no backend, no API keys. The only outside requests are to NASA EONET and NASA GIBS (both CORS-enabled, keyless). Two clocks: an analysis loop reads each frame into a small grid about 15 times a second and writes features; the music clock reads them on every beat. Each record is one settings file plus an `onBeat` function in `src/records/`.
 
 Project page: `about.html`.
 

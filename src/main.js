@@ -2,8 +2,12 @@ import * as Tone from "tone";
 // Self-hosted (no runtime calls to font CDNs, AGENTS.md §18).
 import "@fontsource/atkinson-hyperlegible/400.css";
 import "@fontsource/atkinson-hyperlegible/700.css";
-import "@fontsource/bricolage-grotesque/700.css";
+import "@fontsource/atkinson-hyperlegible-mono/400.css";
+import "@fontsource/instrument-serif/400.css";
+import "./tokens.css";
 import "./style.css";
+import { coverSVG } from "./covers.js";
+import { logoSVG } from "./logo.js";
 import { createAnalyzer } from "./analysis.js";
 import { withVoices, setVolume, silenceDrones, RAGAS, setScaleOverride, startRecording, stopRecordingAsWav } from "./audio.js";
 import { setView, clearRipples, setMarkers } from "./ripples.js";
@@ -29,6 +33,9 @@ const transport = Tone.getTransport();
 let rec = null, audioReady = false, beat = 0, scrubbing = false;
 
 const say = (msg) => { status.textContent = msg; };
+$("logo").innerHTML = logoSVG(32);
+const statusline = $("statusline");
+const showState = () => { statusline.textContent = `Record ${keyOf(RECORDS.indexOf(rec))} of ${RECORDS.length} · ${video.paused ? "Paused" : "Playing"}`; };
 const caption = $("caption");
 const stage = $("stage"), pad = $("probe-pad");
 
@@ -86,7 +93,7 @@ const shelf = $("shelf"), shelfMore = $("shelf-more");
 RECORDS.forEach((r, i) => {
   const li = document.createElement("li");
   const k = keyOf(i);
-  li.innerHTML = `<button aria-pressed="false" aria-keyshortcuts="${k}"><img class="disc" src="discs/${r.id}.jpg" alt="" loading="lazy" decoding="async" width="64" height="64"><span class="t">${k}. ${r.title}</span><span class="d">${r.blurb}</span></button>`;
+  li.innerHTML = `<button aria-pressed="false" aria-keyshortcuts="${k}"><span class="art"><img class="disc" src="discs/${r.id}.jpg" alt="" loading="lazy" decoding="async" width="64" height="64"><span class="cover-box">${coverSVG(r.id, 64)}</span></span><span class="t">${k}. ${r.title}</span><span class="d">${r.blurb}</span></button>`;
   li.firstChild.addEventListener("click", () => select(i));
   (i < FEATURED.length ? shelf : shelfMore).append(li);
 });
@@ -111,6 +118,7 @@ async function select(i) {
 
   allButtons().forEach((b, k) => b.setAttribute("aria-pressed", String(k === i)));
   refreshMarkers();
+  showState();
   $("notes-title").textContent = rec.title;
   $("notes-shows").textContent = rec.notes.shows;
   $("notes-hear").textContent = rec.notes.hear;
@@ -164,6 +172,7 @@ function toggle() { video.paused ? play() : pause(); }
 video.addEventListener("play", () => {
   if (audioReady) transport.start();
   playBtn.textContent = "Pause";
+  showState();
   document.body.classList.add("playing");
   say(`Playing ${rec.title}.`);
 });
@@ -172,6 +181,7 @@ video.addEventListener("pause", () => {
   transport.pause();
   silenceDrones();
   playBtn.textContent = "Play";
+  showState();
   document.body.classList.remove("playing");
   say("Paused.");
 });

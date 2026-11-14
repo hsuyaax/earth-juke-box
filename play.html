@@ -3,18 +3,24 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Earth Jukebox</title>
+  <title>Earth Jukebox: the record</title>
+  <meta name="theme-color" content="#0d1b3d" />
   <meta name="description" content="Hear the planet. Live music generated from NASA Earth visualizations, at the place it happened." />
 </head>
 <body>
   <a class="skip" href="#controls">Skip to controls</a>
-  <header>
-    <h1>Earth Jukebox</h1>
-    <p class="small"><a href="./">Home</a> · <a href="about.html">How it works</a></p>
-    <p class="pitch">Hear the planet. Every sound comes from the NASA picture, at the place it happened.</p>
+  <header class="top">
+    <h1 class="brand"><a href="./"><span class="logo" id="logo" aria-hidden="true"></span><span>Earth Jukebox</span></a></h1>
+    <p class="statusline mono" id="statusline">Record 1</p>
+    <nav aria-label="Main">
+      <a href="./">Home</a>
+      <a href="about.html">How it works</a>
+    </nav>
   </header>
+  <p class="pitch">Hear the planet. Every sound comes from the NASA picture, at the place it happened.</p>
 
   <main>
+    <div class="deck">
     <div class="stage dark" id="stage" tabindex="0" role="application" aria-label="Map. Explore by touch" aria-describedby="probe-help">
       <video id="video" muted playsinline loop preload="auto" aria-describedby="notes-shows"></video>
       <canvas id="overlay" hidden aria-hidden="true"></canvas>
@@ -22,6 +28,7 @@
       <p class="loading" id="loading">Loading clip…</p>
     </div>
     <p id="caption" class="caption" aria-live="polite"></p>
+    </div>
 
     <div class="controls" id="controls" role="group" aria-label="Player">
       <button id="play" class="primary" aria-keyshortcuts="Space">Play</button>

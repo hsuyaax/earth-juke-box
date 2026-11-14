@@ -7,12 +7,13 @@ import { Line, Header, Closing } from "../shared/Chrome.jsx";
 function Hero() {
   const videoRef = useRef(null), stageRef = useRef(null), ctl = useRef(null);
   const [playing, setPlaying] = useState(false), [busy, setBusy] = useState(false), [played, setPlayed] = useState(false);
+  const [preview, setPreview] = useState({ available: false, paused: false });
   const [stats, setStats] = useState(null), [offscreen, setOffscreen] = useState(false), [err, setErr] = useState(""), [vol, setVol] = useState(50);
 
   useEffect(() => {
     ctl.current = createHero({
       video: videoRef.current, stage: stageRef.current,
-      onStats: setStats, onVisible: (v) => setOffscreen(!v),
+      onStats: setStats, onPreview: setPreview, onVisible: (v) => setOffscreen(!v),
       onPlaying: (p) => { setPlaying(p); if (p) setPlayed(true); }, onError: setErr,
     });
     return () => ctl.current.destroy();
@@ -51,6 +52,11 @@ function Hero() {
         <video ref={videoRef} src="clips/lightning.mp4" poster="hero-poster.jpg" muted playsInline preload="metadata" aria-hidden="true" tabIndex={-1} />
         <canvas id="ripples" aria-hidden="true" />
         </div>
+        {preview.available && !playing && (
+          <button type="button" className="pause-pic" onClick={() => ctl.current.setPreviewPaused(!preview.paused)}>
+            <span aria-hidden="true">{preview.paused ? "▶" : "❚❚"}</span> {preview.paused ? "Resume picture" : "Pause picture"}
+          </button>
+        )}
         <figcaption>
           <span className="mono">Fig. 0</span> Lightning seen from the International Space Station, 2017–2023, on a flat world map. Each ring is one flash the engine found in the picture.
         </figcaption>

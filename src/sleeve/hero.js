@@ -5,19 +5,20 @@
 const START = 12; // seconds into the clip: the first ~10 s are the quiet stretch, so the hero starts where it is busy
 const PREVIEW_RING = "#FFF3B0"; // the lightning voice color (COLORS.crack in audio.js), repeated here so Tone is not loaded early
 
-export function createHero({ video, stage, onStats, onVisible, onPlaying, onError }) {
+export function createHero({ video, stage, onStats, onVisible, onPreview, onPlaying, onError }) {
   const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const saveData = !!navigator.connection?.saveData;
   const autoPreview = !reduced && !saveData; // the silent preview moves only when motion is welcome
   let mode = "preview"; // "preview" = silent rings, "sound" = the record is playing
-  let visible = true, flashesSeen = 0, beat = 0, destroyed = false;
+  let visible = true, flashesSeen = 0, beat = 0, destroyed = false, userPaused = false;
   let engine = null, snd = null, volume = 0.5, loading = null;
 
   video.muted = true;
   const seekStart = () => { try { video.currentTime = START; } catch { /* metadata not ready yet */ } };
   video.addEventListener("loadedmetadata", seekStart, { once: true });
   video.addEventListener("ended", () => { seekStart(); if (wantRunning()) video.play().catch(() => {}); }); // loop from START, not 0
-  const wantRunning = () => !destroyed && !document.hidden && (mode === "sound" || (autoPreview && visible));
+  const wantRunning = () => !destroyed && !document.hidden && (mode === "sound" || (autoPreview && visible && !userPaused));
+  onPreview?.({ available: autoPreview, paused: false }); // nothing moves before Play under reduced motion or Save-Data, so no control is needed there
   const sync = () => { if (wantRunning()) video.play().catch(() => {}); else video.pause(); };
 
   // Off screen means off: the silent preview stops when the hero leaves the viewport or the tab is hidden.
@@ -85,6 +86,8 @@ export function createHero({ video, stage, onStats, onVisible, onPlaying, onErro
   return {
     start, stop,
     isSound: () => mode === "sound",
+    // WCAG 2.2.2: the autoplaying silent picture has its own pause control, separate from Play (which starts sound).
+    setPreviewPaused(p) { userPaused = p; sync(); onPreview?.({ available: autoPreview, paused: p }); },
     setVolume(v) { volume = v; snd?.audio.setVolume(v); },
     destroy() { destroyed = true; io.disconnect(); document.removeEventListener("visibilitychange", sync); document.removeEventListener("keydown", onKey); stop(); video.pause(); },
   };

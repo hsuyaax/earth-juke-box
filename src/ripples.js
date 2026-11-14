@@ -4,16 +4,18 @@ const g = canvas.getContext("2d");
 const reduced = matchMedia("(prefers-reduced-motion: reduce)");
 const LIFE = 600;
 let ripples = [];
+let dirty = true; // redraw only when something changed or rings are animating
 let view = { x: 0, y: 0, w: 1, h: 1, vw: 1, vh: 1 }; // map area in video px + video size
 let playhead = null; // 0..1 map x, or null
 let probe = null; // { x0, y0, x1, y1 } in map coords, or null
 
-export function setView(mapArea, vw, vh) { view = { ...mapArea, vw, vh }; ripples = []; playhead = null; }
-export function setPlayhead(x) { playhead = x; }
-export function setProbe(box) { probe = box; }
+export function setView(mapArea, vw, vh) { view = { ...mapArea, vw, vh }; ripples = []; playhead = null; dirty = true; }
+export function setPlayhead(x) { if (x !== playhead) { playhead = x; dirty = true; } }
+const sameBox = (a, b) => a === b || (a && b && a.x0 === b.x0 && a.y0 === b.y0);
+export function setProbe(box) { if (!sameBox(box, probe)) { probe = box; dirty = true; } }
 let markers = []; // [[x, y], ...] map coords of EONET events
-export function setMarkers(m) { markers = m; }
-export function clearRipples() { ripples = []; playhead = null; }
+export function setMarkers(m) { markers = m; dirty = true; }
+export function clearRipples() { ripples = []; playhead = null; dirty = true; }
 
 // Map coords (0..1 inside the map area) -> canvas px.
 export function toCanvas(x, y) {
@@ -26,15 +28,19 @@ export function toCanvas(x, y) {
 export function addRipple(x, y, color, vel = 1) {
   if (ripples.length > 60) ripples.shift();
   ripples.push({ x, y, color, vel, born: performance.now() });
+  dirty = true;
 }
 
 new ResizeObserver(() => {
   const r = canvas.getBoundingClientRect();
   canvas.width = Math.round(r.width * devicePixelRatio);
   canvas.height = Math.round(r.height * devicePixelRatio);
+  dirty = true;
 }).observe(canvas);
 
 function frame(now) {
+  if (!dirty && !ripples.length) return requestAnimationFrame(frame);
+  dirty = false;
   g.clearRect(0, 0, canvas.width, canvas.height);
   const unit = canvas.width / 60;
   if (playhead !== null) {

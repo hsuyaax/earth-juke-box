@@ -41,7 +41,7 @@ today.live = async () => {
   const paint = () => g.drawImage(img, 0, 0, 1280, 640);
   paint();
   const stream = c.captureStream(5);
-  setInterval(paint, 500); // keep frames flowing; a still image never changes
+  setInterval(() => { if (today.active) paint(); }, 500); // keep frames flowing only while on screen
   today.notes.shows = `${BASE_SHOWS} Image date: ${date}.`;
   return (cached = { stream, date });
 };

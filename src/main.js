@@ -64,7 +64,17 @@ const probe = createProbe({ stage, video, state, isAudioReady: () => audioReady,
 const fmt = (t) => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, "0")}`;
 
 // Two clocks: analysis writes features ~15x/s; the beat clock reads them.
-setInterval(() => { analyzer.tick(); probe.tick(); drawOverlay(state); }, 66);
+// Analyse only when the frame changed: a paused or hidden video costs nothing (results stay cached for the probe).
+let lastFrameT = -1;
+setInterval(() => {
+  if (document.hidden || !rec) return;
+  if (video.currentTime !== lastFrameT || video.srcObject) {
+    lastFrameT = video.currentTime;
+    analyzer.tick();
+    drawOverlay(state);
+  }
+  probe.tick();
+}, 66);
 
 // Captions: what the music is saying, at most one update every 6 s, only while playing.
 setInterval(() => {
@@ -81,7 +91,7 @@ const shelf = $("shelf"), shelfMore = $("shelf-more");
 RECORDS.forEach((r, i) => {
   const li = document.createElement("li");
   const k = keyOf(i);
-  li.innerHTML = `<button aria-pressed="false" aria-keyshortcuts="${k}"><img class="disc" src="discs/${r.id}.jpg" alt=""><span class="t">${k}. ${r.title}</span><span class="d">${r.blurb}</span></button>`;
+  li.innerHTML = `<button aria-pressed="false" aria-keyshortcuts="${k}"><img class="disc" src="discs/${r.id}.jpg" alt="" loading="lazy" decoding="async" width="64" height="64"><span class="t">${k}. ${r.title}</span><span class="d">${r.blurb}</span></button>`;
   li.firstChild.addEventListener("click", () => select(i));
   (i < FEATURED.length ? shelf : shelfMore).append(li);
 });
@@ -93,6 +103,8 @@ async function select(i) {
   const wasPlaying = !video.paused;
   freeVoices(rec);
   rec = next;
+  today.active = rec === today; // stop repainting the live image when it is not on screen
+  lastFrameT = -1;
   silenceDrones();
   clearRipples();
   beat = 0;
@@ -159,6 +171,7 @@ video.addEventListener("play", () => {
   say(`Playing ${rec.title}.`);
 });
 video.addEventListener("pause", () => {
+  state.motion?.fill(0); state.meanMotion = 0; // a still frame has no motion (§9: paused currents = temperature only)
   transport.pause();
   silenceDrones();
   playBtn.textContent = "Play";

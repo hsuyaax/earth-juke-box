@@ -124,6 +124,7 @@ Clip decisions made during the build (Sat 14 Nov):
 - 5313's EIC frame holds two copies of the world map; the clip is cropped to the left half (1280x720), grid 128x72.
 - 5669 has stills only. Aerosols use the flat, unlabeled video from SVS 5552 (`Aerosols_NoLabels_2048x1024_30fps.mp4`), same GEOS model; credit links 5552 and 5669. Sulfate (green) has no voice.
 - 5196 uses the `globe_zoom` version; the `globe_tilt` version is too dark.
+- All clips are now full length (Sat 14 Nov). Perpetual Ocean 2 (317 s) and Atmospheric River (292 s) are 960x540 to stay near 1 Mbps; the rest 1280 wide. All H.264, faststart, streamed by range requests.
 - Earth Today uses GIBS `MODIS_Terra_CorrectedReflectance_TrueColor` (VIIRS tiles came back blank).
 
 Transcode command:

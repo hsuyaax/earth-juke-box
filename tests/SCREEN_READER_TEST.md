@@ -25,4 +25,4 @@ Mark each step Pass / Fail and write exactly what NVDA said when it failed.
 
 Phone (after deploy): repeat 3, 6 (using the on-screen arrow buttons), 7, 9 with Android TalkBack.
 
-Report the result in README "Testing status" and about.html "Test results" exactly as it happened.
+Report the result in README "Testing status" and notes.html "How it was measured" exactly as it happened.

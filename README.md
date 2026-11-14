@@ -83,12 +83,12 @@ npm run test:clips  # real clips through the real engine (needs ffmpeg): lightni
 node tools/engine_run.mjs <record> [start] [duration] [fps]   # calibration statistics for any record
 ```
 
-Project page: `about.html`.
+Project page: `notes.html` (liner notes: how it works, who it helps, test status, sources). The landing page is `index.html`; the jukebox is `play.html`.
 
 ## Credits
 
 - Visualizations: NASA's Scientific Visualization Studio (5011, 5313); NASA/Goddard Space Flight Center Scientific Visualization Studio (3912). Clips trimmed and re-encoded for the browser. Aerosols: SVS 5552 / 5669. B-sides: SVS 5196, 5533, 5425, 4960, 4950. Live: NASA GIBS (MODIS/Terra), NASA EONET.
-- Fonts: Atkinson Hyperlegible (Braille Institute), Bricolage Grotesque, via Fontsource.
+- Fonts: Atkinson Hyperlegible and Atkinson Hyperlegible Mono (Braille Institute), Instrument Serif, via Fontsource (all SIL OFL).
 - Built with help from an AI coding assistant (Claude).
 
 ## License

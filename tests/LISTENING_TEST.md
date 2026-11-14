@@ -26,7 +26,7 @@ Goal: can people understand the picture by ear? Use stereo headphones. 3–5 peo
 | P2 | | | | | | | | |
 | P3 | | | | | | | | |
 
-Summary to publish (fill only from the table): "N people, X of N correctly … ". Put it in README "Testing status" and about.html "Test results".
+Summary to publish (fill only from the table): "N people, X of N correctly … ". Put it in README "Testing status" and notes.html "How it was measured".
 
 ## Tuning notes for the team
 - Too loud/quiet layer → change its `volume` in `src/audio.js` FAMILY, or its drone level in the record's `onBeat`.

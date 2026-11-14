@@ -1,27 +1,17 @@
 import * as Tone from "tone";
 import { FAMILY, COLORS, SCALES, makePool, makeDrone } from "../audio.js";
 import { setPlayhead } from "../ripples.js";
+import data from "./aerosols.data.js";
 
 const STEPS = 32;
 
 export default {
-  id: "aerosols",
+  ...data,
   title: "GEOS Aerosols",
   blurb: "Dust, smoke, and sea salt drifting around the planet.",
   svs: 5552, // flat-map version of the GEOS aerosol visualization (also SVS 5572, 5669)
   credit: "NASA's Scientific Visualization Studio, GEOS model by NASA's Global Modeling and Assimilation Office",
-  clip: "clips/aerosols.mp4",
-  mapArea: null, // full frame is a 2:1 world map, -180..180
-  lonlat: true,
-  grid: [96, 48],
   bpm: 88,
-  // Colorbar: black carbon red-orange, dust lavender, sea salt grey-teal, sulfate green (sulfate has no voice in §8).
-  // Sampled at 96x48: the pale bright plumes carry the color; dark teal ocean swirls (v < 0.35) are background.
-  classes: [
-    { name: "dust", label: "dust", colorRange: { h: [245, 300], s: [0.12, 0.5], v: [0.35, 1] }, soundFamily: "dust", kind: "sustained" },
-    { name: "smoke", label: "smoke", colorRange: { h: [345, 35], s: [0.4, 1], v: [0.25, 1] }, soundFamily: "smoke", kind: "sustained" },
-    { name: "salt", label: "sea salt", colorRange: { h: [150, 210], s: [0.12, 0.42], v: [0.35, 1] }, soundFamily: "salt", kind: "sustained" },
-  ],
   probe: { scale: SCALES.minorPent, root: 48, amount: "v", words: ["thin", "medium", "dense"] },
   caption(s) {
     const [, d, sm, sa] = s.classFracS;

@@ -1,25 +1,17 @@
 import * as Tone from "tone";
 import { FAMILY, COLORS, SCALES, makePool, makeDrone } from "../audio.js";
+import data from "./lightning.data.js";
 
 const side = (x) => (x < 0.38 ? "on the left" : x > 0.62 ? "on the right" : "in the middle");
 let flashX = 0.5; // recent flash positions, for captions
 
 export default {
-  id: "lightning",
+  ...data,
   title: "Lightning from the ISS",
   blurb: "Every flash is a drum hit you can place by ear.",
   svs: 5011,
   credit: "NASA's Scientific Visualization Studio",
-  clip: "clips/lightning.mp4", // flat world map version (iss_lightning_sos_yearly), full 100 s
-  mapArea: null, // full frame is the 2:1 world map
-  grid: [96, 48],
   bpm: 96,
-  // Lightning dots sampled at 96x48: hue 40-70, s > 0.4. Grey land and dark ocean never match.
-  classes: [
-    { name: "flash", label: "lightning", colorRange: { h: [38, 72], s: [0.35, 1], v: [0.12, 1] }, soundFamily: "crack", kind: "event" },
-  ],
-  // Jump = brightness above the cell's running average. 0.10 measured as ~1 flash per tick median on this clip.
-  flash: { jump: 0.1, minV: 0.12, full: 0.3, cooldown: 8, avgRate: 0.1, cls: "flash" },
   probe: { scale: SCALES.minorPent, root: 36, amount: "v" },
   caption(s) {
     const r = s.flashRate;

@@ -1,30 +1,21 @@
 import * as Tone from "tone";
 import { FAMILY, COLORS, SCALES, makePool, makeDrone } from "../audio.js";
 import { setPlayhead } from "../ripples.js";
+import data from "./nightlights.data.js";
 
 const STEPS = 32; // 4 bars of eighth notes to cross the map
 
 export default {
-  id: "nightlights",
+  ...data,
   title: "Night Lights 2012–2023",
   blurb: "Where the world is lit, and where it gained or lost light.",
   svs: 5313,
   credit: "NASA's Scientific Visualization Studio",
-  clip: "clips/nightlights.mp4",
-  mapArea: null, // clip is pre-cropped to one world map (left half of the EIC frame)
-  grid: [128, 72],
   bpm: 96,
-  // Sampled from the clip at 128x72 (BUILD_PLAN T4). Dim terrain sits below v 0.10; grey land has s < 0.15.
-  classes: [
-    { name: "violet", label: "more light", colorRange: { h: [250, 345], s: [0.15, 1], v: [0.08, 1] }, soundFamily: "pluckA", kind: "sustained" },
-    { name: "orange", label: "less light", colorRange: { h: [350, 32], s: [0.25, 1], v: [0.1, 1] }, soundFamily: "pluckB", kind: "sustained" },
-    { name: "light", label: "city lights", colorRange: { h: [32, 70], s: [0.15, 1], v: [0.1, 1] }, soundFamily: "pluckA", kind: "sustained" },
-    { name: "light", label: "city lights", colorRange: { s: [0, 0.15], v: [0.3, 1] }, soundFamily: "pluckA", kind: "sustained" },
-  ],
   probe: { scale: SCALES.majorPent, root: 48, amount: "v" },
   caption(s) {
     const f = s.classFracS, lit = f[1] + f[2] + f[3] + f[4]; // violet only appears in the change map
-    if (f[1] > 0.003) return `Change map: ${f[1] >= f[2] ? "more places gained light" : "more places lost light"}.`;
+    if (f[1] > 0.005) return `Change map: ${f[1] >= f[2] ? "more places gained light" : "more places lost light"}.`;
     return lit > 0.05 ? "Many lights on screen." : lit > 0.015 ? "Scattered city lights." : "Mostly dark.";
   },
   notes: {

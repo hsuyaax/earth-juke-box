@@ -19,7 +19,7 @@ export function bside({ id, title, blurb, svs, credit, clip, shows, artistic, gr
     probe: { scale: SCALES.majorPent, root: 48, amount: "v", words: ["dim", "medium", "bright"] },
     caption(s) {
       const b = s.meanS < 0.15 ? "Dim" : s.meanS < 0.35 ? "Medium bright" : "Bright";
-      return `${b}, mostly ${HUES[dominantHue(s)]}, ${s.motionS < 0.004 ? "calm" : "moving"}.`;
+      return `${b}, mostly ${HUES[dominantHue(s)]}, ${this.live ? "a still image" : s.motionS < 0.004 ? "calm" : "moving"}.`; // live = one still image; stream noise is not motion
     },
     notes: {
       shows: shows + (artistic ? " Artistic, not geographic: the camera moves, so left and right do not stay on one place." : ""),

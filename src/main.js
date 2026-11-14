@@ -64,17 +64,12 @@ const probe = createProbe({ stage, video, state, isAudioReady: () => audioReady,
 const fmt = (t) => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, "0")}`;
 
 // Two clocks: analysis writes features ~15x/s; the beat clock reads them.
-// Analyse only when the frame changed: a paused or hidden video costs nothing (results stay cached for the probe).
-let lastFrameT = -1;
-setInterval(() => {
-  if (document.hidden || !rec) return;
-  if (video.currentTime !== lastFrameT || video.srcObject) {
-    lastFrameT = video.currentTime;
-    analyzer.tick();
-    drawOverlay(state);
-  }
-  probe.tick();
-}, 66);
+// Analysis runs on decoded video frames (see analysis.js); a paused or hidden video costs nothing and
+// results stay cached. The probe has its own clock so it keeps sounding while paused (§9).
+analyzer.onFrame(() => drawOverlay(state));
+video.addEventListener("seeked", () => analyzer.tick());
+video.addEventListener("loadeddata", () => analyzer.tick());
+setInterval(() => { if (!document.hidden && rec) probe.tick(); }, 66);
 
 // Captions: what the music is saying, at most one update every 6 s, only while playing.
 setInterval(() => {
@@ -104,7 +99,6 @@ async function select(i) {
   freeVoices(rec);
   rec = next;
   today.active = rec === today; // stop repainting the live image when it is not on screen
-  lastFrameT = -1;
   silenceDrones();
   clearRipples();
   beat = 0;

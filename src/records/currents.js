@@ -1,25 +1,18 @@
 import * as Tone from "tone";
 import { FAMILY, COLORS, SCALES, makePool, makeDrone } from "../audio.js";
 import { setPlayhead } from "../ripples.js";
+import data from "./currents.data.js";
 
 const STEPS = 32;
-const CALM = 0.0019; // median water motion measured on the clip at 96x48, 15 ticks/s
+const CALM = 0.0021; // median water motion, measured through the real engine (tools/engine_run.mjs currents)
 
 export default {
-  id: "currents",
+  ...data,
   title: "Sea Surface Currents and Temperature",
   blurb: "Warm and cold water, and how fast the sea is moving.",
   svs: 3912,
   credit: "NASA/Goddard Space Flight Center Scientific Visualization Studio",
-  clip: "clips/currents.mp4",
-  mapArea: null, // full frame is the 2:1 world map
-  grid: [96, 48],
   bpm: 96,
-  // Colorbar: blue 0 °C, green 10–20 °C, yellow ~25 °C, red 32 °C. Sampled: land is grey (s < 0.15), water s > 0.6.
-  classes: [
-    { name: "warm", label: "warm water", colorRange: { h: [345, 70], s: [0.4, 1], v: [0.04, 1] }, soundFamily: "warm", kind: "sustained" },
-    { name: "cold", label: "cold water", colorRange: { h: [70, 250], s: [0.4, 1], v: [0.04, 1] }, soundFamily: "cold", kind: "sustained" },
-  ],
   probe: { scale: SCALES.majorPent, root: 45, amount: "motion", full: 0.01, words: ["calm", "moving", "fast"] },
   caption(s) {
     const w = s.classFracS[1], c = s.classFracS[2];

@@ -43,14 +43,45 @@ Not yet done: listening test and screen-reader pass. Scripts: `tests/LISTENING_T
 npm install
 npm run dev        # open the URL it prints (5173, or the next free port)
 npm run build      # static site in dist/
-npm test           # WAV encoder self-check
+npm test           # fast self-checks (see Tests)
 ```
 
 `calibrate.html` lets you click any point of a clip to see its pixel values, grid cell, and assigned class. Every color range in `src/records/` was measured from the clips, not guessed.
 
 ## How it works
 
-Static site (Vite, Tone.js, Canvas 2D), no backend, no API keys. The only outside requests are to NASA EONET and NASA GIBS (both CORS-enabled, keyless). Two clocks: an analysis loop reads each frame into a small grid about 15 times a second and writes features; the music clock reads them on every beat. Each record is one settings file plus an `onBeat` function in `src/records/`.
+Static site (Vite, Tone.js, Canvas 2D), no backend, no API keys. The only outside requests are to NASA EONET and NASA GIBS (both CORS-enabled, keyless).
+
+```
+<video> ──decoded frame──▶ analysis (src/analysis.js) ──writes──▶ features ◀──reads on each beat── music clock (Tone.Transport)
+                                    ▲                                 │                                      │
+                          same engine in Node                        ▼                                      ▼
+                    (tools/engine_run.mjs, tests)              explore probe                  notes ──▶ pan, pitch, ripple
+```
+
+Each record is one data file (`src/records/<id>.data.js`: grid, map area, color classes, flash settings) plus one `onBeat` function that turns features into notes.
+
+## Engineering of the core
+
+- **One engine, browser and Node.** `createEngine(rec)` in `src/analysis.js` is pure: an RGBA buffer and a time step go in, features come out. No DOM, no allocation per frame. The browser wrapper feeds it video frames; `tools/engine_run.mjs` feeds it the same clips decoded by ffmpeg. Calibration and tests run the exact code the app runs.
+- **Exact, browser-independent downscaling.** The map area is drawn at 4x the grid, then each 4x4 block is box-averaged by our own code. A cell's color is the true mean of its block in every browser, so the same frame gives the same sound everywhere. Each cell also keeps its brightest pixel (`peak`), so a one-pixel lightning dot is never averaged or aliased away.
+- **Driven by real frames.** Analysis runs on each decoded video frame (`requestVideoFrameCallback`, capped at about 15 per second), with a timer fallback. A paused or hidden video costs nothing; results stay cached for the probe.
+- **Frame-rate independent.** Every smoothing step uses `alpha = 1 - exp(-dt / tau)` and cooldowns are in seconds, so a slow phone, a throttled tab, or a 60 fps clip gives the same result as the 15 Hz the constants were calibrated at. Motion is a rate, normalised to that tick.
+- **Flash detection.** Brightest-pixel luma (Rec. 709) jumps above a per-cell running average; the cell must be the local maximum of its 3x3 neighbourhood (one flash, one hit), match the lightning color class, and then rests for a cooldown. At most 6 hits per beat, snapped to the beat grid.
+- **Context-aware classes.** A class can require another to be on screen (`requires`). Measured on the clip, violet appears only on the night-lights change map, so orange counts as "less light" only there; during the yearly series, orange-hued city lights stay "light" (orange during the series fell from 1–2.3% of the map to under 0.1%).
+- **Probe.** Reads a 3x3 neighbourhood each tick on its own clock (works while paused). Sustained classes need 2 ticks to switch (hysteresis); events fire at once. While paused, lightning uses a spatial detector (brightest cell above its 5x5 ring by a measured 0.04). Spoken updates are throttled but never dropped.
+- **Audio.** One master chain with a limiter; pitch always snapped to the scale; each note carries its map position, which drives pan, pitch, and its ripple together. Only the current record's instruments exist; the previous record's are freed on switch.
+- **Measured, not guessed.** Every threshold comes from running the real clips through the engine, and the reason is written next to the number. Example: flash jump 0.25 gives a quiet start (~2 flashes/s), a busy peak (~14/s), and only 16% of beats at the 6-hit cap (0.15 would cap 77%).
+
+## Tests
+
+```
+npm test            # fast, no ffmpeg: color math, class matching (hue wrap), 1-px dot survives downscale,
+                    # frame-rate independence, context gates, WAV encoder
+npm run test:clips  # real clips through the real engine (needs ffmpeg): lightning quiet-vs-busy and cap,
+                    # night lights orange/violet only on the change map, currents warm tropics and no land
+node tools/engine_run.mjs <record> [start] [duration] [fps]   # calibration statistics for any record
+```
 
 Project page: `about.html`.
 

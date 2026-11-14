@@ -14,8 +14,8 @@ let rec;
 RECORDS.forEach((r, i) => pick.add(new Option(r.title, i)));
 pick.addEventListener("change", () => load(+pick.value));
 function load(i) { rec = RECORDS[i]; analyzer.setRecord(rec); video.src = rec.clip; }
-setInterval(analyzer.tick, 66);
-video.addEventListener("seeked", () => setTimeout(analyzer.tick, 30));
+video.addEventListener("seeked", () => analyzer.tick());
+video.addEventListener("loadeddata", () => analyzer.tick());
 
 video.addEventListener("click", (e) => {
   e.preventDefault();
@@ -33,7 +33,7 @@ video.addEventListener("click", (e) => {
   out.textContent = [
     `t=${video.currentTime.toFixed(2)}s  video px (${vx}, ${vy})`,
     `pixel   RGB ${R},${G},${B}   H ${h.toFixed(0)}  S ${sat.toFixed(2)}  V ${v.toFixed(2)}   class: ${name(classify(rec.classes, h, sat, v))}`,
-    ok ? `cell (${cx}, ${cy}) of ${s.W}x${s.H}   H ${s.h[i].toFixed(0)}  S ${s.s[i].toFixed(2)}  V ${s.v[i].toFixed(3)}  motion ${s.motion[i].toFixed(4)}  jump ${s.jump[i].toFixed(3)}   class: ${name(s.cls[i])}` : "outside map area",
+    ok ? `cell (${cx}, ${cy}) of ${s.W}x${s.H}   H ${s.h[i].toFixed(0)}  S ${s.s[i].toFixed(2)}  V ${s.v[i].toFixed(3)}  motion ${s.motion[i].toFixed(4)}  peak ${s.peak[i].toFixed(3)}  jump ${s.jump[i].toFixed(3)}   class: ${name(s.cls[i])}` : "outside map area",
     `frame   mean V ${s.mean.toFixed(3)}  mean motion ${s.meanMotion.toFixed(4)}  flash rate ${s.flashRate.toFixed(1)}/s`,
   ].join("\n");
 });

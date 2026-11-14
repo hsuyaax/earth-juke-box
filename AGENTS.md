@@ -228,6 +228,8 @@ ripple layer (canvas over the video)
 
 The analysis loop and the music clock are separate. Analysis writes features; the clock reads them on the beat.
 
+Implementation (Sat 14 Nov): analysis is a pure engine (`createEngine` in `src/analysis.js`) shared by the browser and Node. It runs on decoded video frames (`requestVideoFrameCallback`, about 15 per second, timer fallback), box-averages a 4x supersampled grid itself (same result in every browser), keeps each cell's brightest pixel for flashes, and smooths with time constants so results do not depend on frame rate. Engine settings per record live in `src/records/<id>.data.js`. Thresholds are calibrated with `tools/engine_run.mjs` and locked by `npm run test:clips`.
+
 Features per frame: mean brightness, hue histogram (12 bins, saturation-weighted), motion energy per cell, flash events, column profile, brightness centroid, per-record color-class masks.
 
 ```

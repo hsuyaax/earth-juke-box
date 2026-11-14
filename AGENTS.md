@@ -3,7 +3,20 @@
 Single reference for the team and for any coding agent in this repo. This version is **final** and replaces the earlier draft and `EXPLORE_MODE.md` (now section 9).
 Change a decision only by editing this file in the same commit as the code.
 
-Finalized: Sat 14 Nov 2026.
+Finalized: Sat 14 Nov 2026. Status updated the same day (see "Current status" below).
+
+## Current status (keep this up to date)
+
+| Area | State |
+|---|---|
+| P0 core | Built. 3 featured records, live music, ripples, keyboard, scrub |
+| P1 | Built: explore probe, legend, captions, liner notes, visual polish. **Not done: screen-reader pass, listening test** (scripts in `tests/`) |
+| P2 | Built: aerosols, 5 B-sides, EONET alerts, Earth Today, raga presets (experimental, need a musician's approval), WAV export, vibration |
+| Project page | `about.html` |
+| Deploy | Ready (Pages workflow in `.github/workflows/deploy.yml`), not yet published |
+| Tests | `npm test` (fast), `npm run test:clips` (real clips, needs ffmpeg) |
+
+Where the numbers live: engine settings and thresholds in `src/records/<id>.data.js` (each with the measurement behind it). BUILD_PLAN.md is the original build order; where its numbers differ from the code, the code and this file win.
 
 ---
 
@@ -211,12 +224,12 @@ Rules:
 ## 10. Architecture
 
 - **Stack:** Vite + JavaScript, Tone.js, Canvas 2D. Deploy to Vercel or GitHub Pages.
-- **Assets:** 20–40 s clips, H.264, about 1280 px wide, served from the same origin (required for reading pixels).
+- **Assets:** full-length clips, H.264, faststart, about 1280 px wide (960 for the two 5-minute B-sides), served from the same origin (required for reading pixels).
 
 ```
 video element
    └─ analysis loop (about 15 times per second)
-        draw frame to small canvas (about 128x36 or 96x54)
+        draw frame at 4x the grid (grid 96x48 or 128x72), box-average each block
         compute features -> smoothed feature state (cached)
 music clock (Tone.Transport, independent of video frame rate)
    └─ each beat: read feature state -> schedule notes -> emit ripple events
@@ -233,15 +246,22 @@ Implementation (Sat 14 Nov): analysis is a pure engine (`createEngine` in `src/a
 Features per frame: mean brightness, hue histogram (12 bins, saturation-weighted), motion energy per cell, flash events, column profile, brightness centroid, per-record color-class masks.
 
 ```
+index.html, about.html, calibrate.html   app, project page, calibration page
 src/
-  main.js          page and jukebox screen
-  analysis.js      frame reading and features
-  audio.js         scales, voices, beat clock, limiter
-  explore.js       probe
-  ripples.js       see-the-sound layer
-  records/         one settings file per record
-  calibrate.html   calibration page
-public/clips/
+  main.js            jukebox screen, keyboard, wiring
+  analysis.js        pure engine (createEngine) + browser wrapper (createAnalyzer)
+  audio.js           master chain, scales, ragas, sound families, pools, drones, WAV export
+  explore.js         probe and audio legend
+  ripples.js         see-the-sound layer, playhead, probe box, EONET markers
+  overlay.js         "what the engine sees"
+  eonet.js           EONET alerts
+  records/<id>.data.js   engine settings (grid, classes, flash) — no imports, shared with Node
+  records/<id>.js        voices, onBeat, captions, liner notes
+  records/bside.js       default mapping + the five B-sides
+  records/today.js       Earth Today (GIBS)
+tools/engine_run.mjs     real clip through the real engine: calibration statistics
+tests/                   engine_check, wav_check, engine_regress, test scripts for people
+public/clips, public/discs
 ```
 
 Each record's settings: clip path, credit line, map area in the frame, colorbar stops if any, classes, scale, mapping preset, liner notes, audio-legend script.
@@ -322,8 +342,8 @@ Minimum strong entry if time runs short: lightning record with music, ripples, p
 - [ ] Live URL works on phone and laptop in a fresh browser.
 - [ ] Public repo with README, license, credits.
 - [ ] Demo video or slides in the required format.
-- [ ] Project page: problem, what it does, how the mapping works, who it helps, test results, NASA resources with links, credits.
-- [ ] AI use disclosed if required.
+- [x] Project page: problem, what it does, how the mapping works, who it helps, test results, NASA resources with links, credits.
+- [x] AI use disclosed (README and about.html).
 - [ ] Team table in section 1 filled in.
 - [ ] Submitted before the deadline, with buffer.
 

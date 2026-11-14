@@ -4,6 +4,8 @@ Companion to `AGENTS.md`. This file covers the **core (P0)**: three records play
 
 Rules in `AGENTS.md` win if anything here disagrees with them.
 
+> **Historical build order.** All tasks here are done. Some numbers below are the starting values (40 s clips, flash jump 0.10, 128x36 grid). The current values, with the measurements behind them, are in `src/records/<id>.data.js` and AGENTS.md "Current status".
+
 ---
 
 ## Part A — What to download

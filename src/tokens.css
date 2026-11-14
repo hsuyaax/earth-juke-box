@@ -1,0 +1,34 @@
+/* Design tokens shared by all three surfaces (DESIGN.md sections 4-6). */
+:root {
+  /* paper surface (sleeve, liner notes) */
+  --paper: #f4efe6;
+  --paper-2: #eae3d6;
+  --ink: #0d1b3d;
+  --ink-2: #4b5878;
+  --ink-accent: #4b2fcf;
+  --rule: #8c8474;
+  /* vinyl surface (the record, dark bands, footers) */
+  --vinyl: #0d1b3d;
+  --groove: #081229;
+  --text: #f4efe6;
+  --text-2: #c9c3ba;
+  --text-3: #9aa3bd;
+  --line: #5a6a99;
+  --amber: #ffc25c;
+  /* type */
+  --display: "Instrument Serif", Georgia, "Times New Roman", serif;
+  --body: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "Atkinson Hyperlegible Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  --display-xl: clamp(3.5rem, 11vw, 10rem);
+  --display-l: clamp(2.75rem, 8vw, 7rem);
+  --display-m: clamp(2rem, 4.5vw, 3.5rem);
+  /* spacing (4, 8, 12, 16, 24, 32, 48, 72, 96, 144, 192) */
+  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px; --s6: 32px; --s7: 48px; --s8: 72px; --s9: 96px; --s10: 144px; --s11: 192px;
+  --gutter: 16px;
+  --section: clamp(72px, 12vw, 192px);
+  /* motion */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-io: cubic-bezier(0.76, 0, 0.24, 1);
+}
+@media (min-width: 640px) { :root { --gutter: 24px; } }
+@media (min-width: 1024px) { :root { --gutter: 40px; } }

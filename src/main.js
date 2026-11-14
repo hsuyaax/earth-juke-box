@@ -265,4 +265,6 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
-select(0);
+// ?r=N (the keys 1-9, 0) opens a given record, so the landing page can link straight to it.
+const wanted = RECORDS.findIndex((_, i) => keyOf(i) === new URLSearchParams(location.search).get("r"));
+select(wanted >= 0 ? wanted : 0);

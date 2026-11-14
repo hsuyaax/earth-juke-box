@@ -8,7 +8,13 @@ const STEPS = 16;
 const HUES = ["red", "orange", "yellow", "yellow-green", "green", "green", "teal", "blue", "blue", "violet", "purple", "pink"];
 const dominantHue = (s) => { let k = 0; for (let i = 1; i < 12; i++) if (s.hueHistS[i] > s.hueHistS[k]) k = i; return k; };
 
+// Tempo follows motion. Changing the transport tempo from inside the beat callback (which runs inside the clock's own
+// tick loop) made Tone's clock throw "Cannot read properties of undefined (reading 'time')" a few seconds in, and the
+// music stopped, on every B-side. So the ramp is issued from the draw loop (outside the clock loop), in steps of 4 bpm
+// and at most once every 4 seconds, which also keeps Tone's 1000-event automation history from filling up.
+const TEMPO_STEP = 4, TEMPO_EVERY = 4;
 export function bside({ id, title, blurb, svs, credit, clip, shows, artistic, grid = [96, 54], lonlat = false, live = null }) {
+  let tempo = null, lastRamp = -Infinity; // per record: last tempo target and when it was set
   return {
     id, title, blurb, svs, credit, clip, live, lonlat, grid,
     bside: true,
@@ -27,6 +33,7 @@ export function bside({ id, title, blurb, svs, credit, clip, shows, artistic, gr
       listen: "Chord changes as the colors shift; the tempo rising when the picture moves fast.",
     },
     voices() {
+      tempo = null; lastRamp = -Infinity;
       return {
         lead: makePool(FAMILY.neutral, { color: COLORS.neutral, scale: SCALES.majorPent, root: 48 }),
         chord: makePool(FAMILY.neutral, { color: COLORS.light, scale: SCALES.majorPent, root: 36, octaves: 2, size: 3 }),
@@ -35,8 +42,9 @@ export function bside({ id, title, blurb, svs, credit, clip, shows, artistic, gr
     },
     onBeat(s, v, time, beat) {
       const { W, H } = s;
-      // tempo follows motion
-      Tone.getTransport().bpm.rampTo(72 + 60 * Math.min(1, s.motionS / 0.02), 1, time);
+      // tempo follows motion (stepped and rate-limited, see TEMPO_STEP)
+      const target = Math.round((72 + 60 * Math.min(1, s.motionS / 0.02)) / TEMPO_STEP) * TEMPO_STEP;
+      if (target !== tempo && time - lastRamp >= TEMPO_EVERY) { tempo = target; lastRamp = time; Tone.getDraw().schedule(() => Tone.getTransport().bpm.rampTo(target, 1), time); }
       v.pad.set(Math.min(0.25, s.meanS * 0.6), time);
 
       // chord per bar: dominant hue -> scale degree, played at the brightness centroid

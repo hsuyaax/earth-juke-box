@@ -70,6 +70,15 @@ export const RAGAS = {
 let scaleOverride = null;
 export function setScaleOverride(notes) { scaleOverride = notes; }
 
+// Audition: play the chosen scale up one octave, so changing the Scale control is audible at once (even paused).
+// One small synth straight into the master chain (and its limiter); it only ever plays after a user picks a scale.
+let auditionSynth = null;
+export function auditionScale(notes, rootMidi = 60) {
+  auditionSynth ||= new Tone.Synth({ oscillator: { type: "triangle" }, envelope: { attack: 0.01, decay: 0.25, sustain: 0, release: 0.3 }, volume: -12 }).connect(master);
+  const t0 = Tone.now() + 0.05, step = 0.2;
+  [...notes, 12].forEach((n, i) => auditionSynth.triggerAttackRelease(Tone.Frequency(rootMidi + n, "midi").toFrequency(), 0.18, t0 + i * step, 0.8));
+}
+
 // A pool of one instrument. play(x, y, vel, dur, time): x,y are 0..1 map coords.
 // Position drives pan (x), pitch (y), and the ripple, so sound and picture can't drift apart.
 export function makePool(makeSynth, { color, scale, root = 48, octaves = 3, size = 6, out = musicBus }) {

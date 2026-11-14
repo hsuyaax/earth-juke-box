@@ -9,7 +9,7 @@ import "./style.css";
 import { coverSVG } from "./covers.js";
 import { logoSVG, pulseLogo } from "./logo.js";
 import { createAnalyzer } from "./analysis.js";
-import { withVoices, setVolume, silenceDrones, RAGAS, setScaleOverride, startRecording, stopRecordingAsWav } from "./audio.js";
+import { withVoices, setVolume, silenceDrones, RAGAS, setScaleOverride, auditionScale, startRecording, stopRecordingAsWav } from "./audio.js";
 import { setView, clearRipples, setMarkers } from "./ripples.js";
 import { createEonet, events } from "./eonet.js";
 import { setOverlayRecord, toggleOverlay, drawOverlay } from "./overlay.js";
@@ -115,7 +115,7 @@ async function select(i) {
   analyzer.setRecord(rec);
   probe.setRecord(rec);
   caption.textContent = "";
-  transport.bpm.value = rec.bpm;
+  if (transport.bpm.value !== rec.bpm) transport.bpm.value = rec.bpm; // Tone keeps every tempo automation event (see bside.js)
   if (audioReady) ensureVoices();
 
   allButtons().forEach((b, k) => b.setAttribute("aria-pressed", String(k === i)));
@@ -235,9 +235,16 @@ $("legend-btn").addEventListener("click", async () => { await unlockAudio(); pro
 // ---- scale presets (experimental) ----
 const scaleSel = $("scale");
 for (const [id, r] of Object.entries(RAGAS)) scaleSel.add(new Option(r.name, id));
-scaleSel.addEventListener("change", () => {
-  setScaleOverride(RAGAS[scaleSel.value]?.notes || null);
-  say(scaleSel.value ? `${RAGAS[scaleSel.value].name} on. Experimental.` : "Default scales.");
+scaleSel.addEventListener("change", async () => {
+  const raga = RAGAS[scaleSel.value];
+  setScaleOverride(raga?.notes || null);
+  const own = rec.probe.scale, notes = raga?.notes || own;
+  const same = raga && notes.length === own.length && notes.every((n, i) => n === own[i]);
+  say(raga
+    ? `${raga.name} on. Experimental.${same ? " Same notes as this record's default scale." : ""} Playing the scale.`
+    : "Default scales. Playing the scale.");
+  await unlockAudio(); // choosing a scale is a user action
+  auditionScale(notes, 60 + (rec.probe.root % 12));
 });
 
 // ---- WAV export ----

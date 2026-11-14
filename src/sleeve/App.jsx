@@ -150,26 +150,22 @@ function HearIt() {
 
 /* The probe, drawn: a map, the square under the pointer, and the keys. Decorative; the list beside it carries the same facts. */
 function ProbeFigure() {
-  const keys = [["←", 28], ["↑", 84], ["↓", 140], ["→", 196]];
+  // Drawn at 360 wide so the key glyphs never render below 16 px on a phone.
+  const keys = ["←", "↑", "↓", "→", "D"];
   return (
-    <svg className="figure" viewBox="0 0 640 360" role="img" aria-labelledby="probe-t probe-d">
+    <svg className="figure" viewBox="0 0 360 250" role="img" aria-labelledby="probe-t probe-d">
       <title id="probe-t">The explore probe</title>
       <desc id="probe-d">A world map with a small square on it. The square is what you hear. Below the map are the four arrow keys that move the square, and the D key that describes the spot.</desc>
-      <rect x="1" y="1" width="638" height="238" fill="#0d1b3d" stroke="#4b2fcf" strokeWidth="2" />
-      {[[120, 90], [128, 100], [300, 60], [310, 150], [318, 156], [470, 110], [480, 70], [520, 130], [200, 180], [420, 190]].map(([x, y], i) => <circle key={i} cx={x} cy={y} r="4" fill="#fff3b0" />)}
-      <rect x="296" y="136" width="44" height="44" fill="none" stroke="#ffc25c" strokeWidth="4" />
-      <path d="M318 136V108M318 108l-8 10M318 108l8 10" stroke="#ffc25c" strokeWidth="3" fill="none" />
-      <g transform="translate(150 262)" fill="none" stroke="#4b2fcf" strokeWidth="2">
-        {keys.map(([g, x]) => (
-          <g key={g} transform={`translate(${x} 0)`}>
-            <rect width="48" height="48" rx="4" fill="#eae3d6" />
-            <text x="24" y="33" textAnchor="middle" fontSize="26" fill="#0d1b3d" stroke="none">{g}</text>
+      <rect x="1" y="1" width="358" height="150" fill="#0d1b3d" stroke="#4b2fcf" strokeWidth="2" />
+      {[[50, 40], [58, 50], [150, 30], [156, 90], [162, 94], [250, 60], [262, 36], [300, 80], [100, 110], [220, 120]].map(([x, y], i) => <circle key={i} cx={x} cy={y} r="3" fill="#fff3b0" />)}
+      <rect x="148" y="70" width="34" height="34" fill="none" stroke="#ffc25c" strokeWidth="3" />
+      <g transform="translate(20 176)">
+        {keys.map((g, i) => (
+          <g key={g} transform={`translate(${i * 66} 0)`}>
+            <rect width="56" height="56" rx="4" fill="#eae3d6" stroke="#4b2fcf" strokeWidth="2" />
+            <text x="28" y="38" textAnchor="middle" fontSize="28" fill="#0d1b3d">{g}</text>
           </g>
         ))}
-        <g transform="translate(264 0)">
-          <rect width="48" height="48" rx="4" fill="#eae3d6" />
-          <text x="24" y="33" textAnchor="middle" fontSize="26" fill="#0d1b3d" stroke="none">D</text>
-        </g>
       </g>
     </svg>
   );

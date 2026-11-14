@@ -128,11 +128,14 @@ async function select(i) {
   $("loading").hidden = false;
   $("loading").textContent = rec.live ? "Fetching today's image from NASA…" : "Loading clip…";
   scrub.disabled = !!rec.live;
+  const chosen = rec; // ignore late events from a record the user already left
   video.addEventListener("loadedmetadata", () => {
+    if (rec !== chosen) return;
     setView(rec.mapArea || { x: 0, y: 0, w: video.videoWidth, h: video.videoHeight }, video.videoWidth, video.videoHeight);
     setOverlayRecord(rec, video.videoWidth, video.videoHeight);
   }, { once: true });
   video.addEventListener("canplay", () => {
+    if (rec !== chosen) return;
     $("loading").hidden = true;
     if (wasPlaying) play();
   }, { once: true });

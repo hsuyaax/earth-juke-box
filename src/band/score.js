@@ -1,10 +1,14 @@
 // The Earth Band score: one call per 16th note. Features in, note events out. Pure apart from its own memory
 // (tension, current chord, last lead note, pad voicing), and deterministic: same features, same notes.
 // No member plays a note unless a feature from its own frames caused it; a member that is off plays nothing.
-import { chordForBar, chordPcs, melodyNote, bassStep, voiceChord, drumVoice, CHORDS } from "./theory.js";
+import { chordForBar, chordPcs, melodyNote, bassStep, voiceChord, drumVoice, notesIn, CHORDS } from "./theory.js";
 import { NORM, norm } from "./members.js";
 
-const LEAD_RANGE = [60, 76], PAD_RANGE = [45, 64];
+// The aerosol noise voices are pitched noise (src/audio.js: the bandpass follows the note), so their centers are notes too:
+// height on the map picks a pentatonic note in each voice's own band. Dust around 2-3 kHz, salt higher, smoke low.
+const DUST_RANGE = [86, 98], SALT_RANGE = [98, 110], SMOKE_RANGE = [45, 57];
+const LEAD_RANGE = [60, 76], PAD_RANGE = [45, 64], MARIMBA_RANGE = [57, 69], ARP_RANGE = [76, 88];
+const strongestColor = (s) => Math.max(...s.hueHistS);
 
 // Activity 0..1 per member, each against its own measured quiet-to-busy range (used for tension and the pad glow).
 export function activityOf(id, s) {
@@ -13,11 +17,14 @@ export function activityOf(id, s) {
   if (id === "bass") return norm(s.motionS, NORM.motion);
   if (id === "lead") return norm(s.classFracS[1] + s.classFracS[2] + s.classFracS[3] + s.classFracS[4], NORM.lit);
   if (id === "pad") return norm(s.meanS, NORM.density);
+  if (id === "shaker") return (norm(s.classFracS[1], NORM.dust) + norm(s.classFracS[2], NORM.smoke) + norm(s.classFracS[3], NORM.salt)) / 3;
+  if (id === "arp") return norm(s.motionS, NORM.oceanMotion);
+  if (id === "marimba") return norm(s.meanS, NORM.forestBright);
   return 0;
 }
 
 export function createScore() {
-  const mem = { T: 0, numeral: "i", next: "i", lead: null, voicing: null, padOn: false };
+  const mem = { T: 0, numeral: "i", next: "i", lead: null, voicing: null, padOn: false, arpI: 0, arpChord: null, marimba: null };
 
   // n = 16th-note count since Play. members = { id: { on, full, s } }, s = that member's engine state.
   function step(n, members) {
@@ -98,6 +105,42 @@ export function createScore() {
           mem.voicing = voicing; mem.padOn = true;
         }
       }
+    }
+
+    // Shaker and atmosphere (aerosols, flat map): dust shaker on 16ths, sea-salt hiss on off-beats, smoke swell per bar.
+    const sh = members.shaker;
+    if (sh?.on && sh.s?.ready) {
+      const s = sh.s, cx = [0, 0, 0, 0], cy = [0, 0, 0, 0], cn = [0, 0, 0, 0];
+      for (let i = 0; i < s.W * s.H; i++) { const c = s.cls[i]; if (c) { cx[c] += i % s.W; cy[c] += Math.floor(i / s.W); cn[c]++; } }
+      const at = (c) => (cn[c] ? [(cx[c] / cn[c] + 0.5) / s.W, (cy[c] / cn[c] + 0.5) / s.H] : [0.5, 0.5]);
+      const dust = norm(s.classFracS[1], NORM.dust), smoke = norm(s.classFracS[2], NORM.smoke), salt = norm(s.classFracS[3], NORM.salt);
+      if (cn[1] && (sh.full || slot % 2 === 0)) { const [x, y] = at(1); events.push({ member: "shaker", voice: "dust", vel: 0.15 + 0.6 * dust, dur: "32n", midi: melodyNote(1 - y, DUST_RANGE, chord, false), offset: 0, pan: x * 2 - 1, x, y }); }
+      if (cn[3] && slot % 4 === 2 && (sh.full || slot % 8 === 6)) { const [x, y] = at(3); events.push({ member: "shaker", voice: "salt", vel: 0.2 + 0.6 * salt, dur: "16n", midi: melodyNote(1 - y, SALT_RANGE, chord, false), offset: 0, pan: x * 2 - 1, x, y }); }
+      if (cn[2] && slot === 0 && smoke > 0.2) { const [x, y] = at(2); events.push({ member: "shaker", voice: "smoke", vel: 0.2 + 0.6 * smoke, dur: "1m", midi: melodyNote(1 - y, SMOKE_RANGE, chord, true), offset: 0, pan: x * 2 - 1, x, y }); }
+    }
+
+    // Arpeggio (Perpetual Ocean, moving camera): chord tones only, up then down; motion sets the rate, brightness the span.
+    const ar = members.arp;
+    if (ar?.on && ar.s?.ready && ar.s.meanS >= NORM.oceanBright[0]) {
+      const fast = activity.arp >= 0.5, every = (fast ? 1 : 2) * (ar.full ? 1 : 2);
+      if (slot % every === 0) {
+        const bright = norm(ar.s.meanS, NORM.oceanBright) >= 0.5;
+        const tones = notesIn(ARP_RANGE[0], bright ? ARP_RANGE[1] : 82, CHORDS[chord].pcs); // dim: the lower half-octave only
+        const seq = [...tones, ...tones.slice(1, -1).reverse()];
+        if (mem.arpChord !== chord) { mem.arpChord = chord; mem.arpI = 0; }
+        const midi = seq[mem.arpI++ % seq.length];
+        events.push({ member: "arp", voice: "arp", midi, vel: 0.3 + 0.4 * norm(ar.s.meanS, NORM.oceanBright), dur: fast ? "16n" : "8n", offset: 0,
+          pan: mem.arpI % 2 ? -0.5 : 0.5, x: ar.s.bx, y: ar.s.by });
+      }
+    }
+
+    // Marimba (forest height, moving camera): off-beat eighths only; color strength sets the height, brightness the loudness.
+    const ma = members.marimba;
+    if (ma?.on && ma.s?.ready && slot % 4 === 2 && (ma.full || slot % 8 === 6)) {
+      const t = norm(strongestColor(ma.s), NORM.forestColor);
+      const midi = melodyNote(t, MARIMBA_RANGE, chord, false, mem.marimba);
+      mem.marimba = midi;
+      events.push({ member: "marimba", voice: "marimba", midi, vel: 0.3 + 0.5 * activity.marimba, dur: "8n", offset: 0, pan: 0.3, x: ma.s.bx, y: ma.s.by });
     }
 
     return { events, chord, spoken: CHORDS[chord].spoken, T: mem.T, activity, slot, bar };

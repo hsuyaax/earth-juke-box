@@ -17,7 +17,7 @@ export function createBandAnalyzer(video, rec) {
 
   if (canWork) {
     // Mirror of the fields the band reads, filled from the worker's replies.
-    state = { W, H, cls: new Uint8Array(n), motion: new Float32Array(n), v: new Float32Array(n), classFracS: new Float32Array(rec.classes.length + 1),
+    state = { W, H, cls: new Uint8Array(n), motion: new Float32Array(n), v: new Float32Array(n), classFracS: new Float32Array(rec.classes.length + 1), hueHistS: new Float32Array(12),
       flashes: Array.from({ length: MAX_FLASHES }, () => ({ x: 0, y: 0, power: 0 })), nFlashes: 0, flashRate: 0, motionS: 0, meanS: 0, bx: 0.5, by: 0.5, ready: false };
     const pushFlash = (x, y, power) => { // same rule as the engine: keep the strongest MAX_FLASHES until a beat takes them
       const f = state.flashes;
@@ -28,7 +28,7 @@ export function createBandAnalyzer(video, rec) {
     const worker = new Worker(new URL("./worker.js", import.meta.url), { type: "module" });
     worker.postMessage({ type: "init", rec: { grid: rec.grid, classes: rec.classes, flash: rec.flash } });
     worker.onmessage = ({ data: d }) => {
-      state.cls.set(d.cls); state.motion.set(d.motion); state.v.set(d.v); state.classFracS.set(d.classFracS);
+      state.cls.set(d.cls); state.motion.set(d.motion); state.v.set(d.v); state.classFracS.set(d.classFracS); state.hueHistS.set(d.hueHistS);
       for (const [x, y, p] of d.flashes) pushFlash(x, y, p);
       state.flashRate = d.flashRate; state.motionS = d.motionS; state.meanS = d.meanS; state.bx = d.bx; state.by = d.by; state.ready = true;
       workerMs += d.ms; analyses++; busy = false;

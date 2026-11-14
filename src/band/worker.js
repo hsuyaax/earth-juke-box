@@ -20,7 +20,7 @@ self.onmessage = ({ data }) => {
   const s = engine.state;
   // Only what the band's onBeat functions read. Typed arrays are copied (small: at most 9216 cells).
   self.postMessage({
-    W: s.W, H: s.H, cls: s.cls, motion: s.motion, v: s.v, classFracS: s.classFracS,
+    W: s.W, H: s.H, cls: s.cls, motion: s.motion, v: s.v, classFracS: s.classFracS, hueHistS: s.hueHistS,
     flashes: s.flashes.slice(0, s.nFlashes).map((f) => [f.x, f.y, f.power]),
     flashRate: s.flashRate, motionS: s.motionS, meanS: s.meanS, bx: s.bx, by: s.by, ms: performance.now() - t0,
   });

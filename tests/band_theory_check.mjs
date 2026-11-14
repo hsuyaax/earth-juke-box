@@ -24,6 +24,7 @@ function frames() {
   return {
     drums: { flashes: Array.from({ length: 6 }, () => ({ x: 0, y: 0, power: 0 })), nFlashes: 0, flashRate: 0, ready: true },
     bass, lead, pad: { meanS: 0, bx: 0.5, by: 0.5, ready: true },
+    shaker: mk(96, 48, 4), arp: { meanS: 0, motionS: 0, bx: 0.5, by: 0.5, ready: true }, marimba: { meanS: 0, hueHistS: new Float32Array(12), bx: 0.5, by: 0.5, ready: true },
     tick() { // new random features for the next 16th
       const d = this.drums; d.nFlashes = Math.floor(rnd() * 4); d.flashRate = rnd() * 18;
       for (let k = 0; k < d.nFlashes; k++) Object.assign(d.flashes[k], { x: rnd(), y: rnd(), power: rnd() });
@@ -32,6 +33,10 @@ function frames() {
       for (let i = 0; i < lead.cls.length; i++) { lead.cls[i] = rnd() < 0.05 ? 3 : 0; lead.v[i] = rnd(); }
       lead.classFracS[3] = 0.01 + 0.1 * rnd();
       this.pad.meanS = 0.08 + 0.4 * rnd();
+      const sh = this.shaker; for (let i = 0; i < sh.cls.length; i++) sh.cls[i] = rnd() < 0.08 ? 1 + Math.floor(rnd() * 3) : 0;
+      sh.classFracS[1] = 0.03 + 0.02 * rnd(); sh.classFracS[2] = 0.014 + 0.02 * rnd(); sh.classFracS[3] = 0.016 + 0.02 * rnd();
+      this.arp.meanS = 0.14 + 0.27 * rnd(); this.arp.motionS = 0.001 + 0.015 * rnd();
+      this.marimba.meanS = 0.13 + 0.06 * rnd(); this.marimba.hueHistS.fill(0); this.marimba.hueHistS[6] = 0.045 + 0.07 * rnd();
     },
   };
 }
@@ -39,12 +44,13 @@ function run(onSet, steps = 16 * 32) {
   seed = 7; const f = frames(), score = createScore(), out = [];
   for (let n = 0; n < steps; n++) {
     f.tick();
-    const r = score.step(n, { drums: { on: onSet.drums, full: true, s: f.drums }, bass: { on: onSet.bass, full: true, s: f.bass }, lead: { on: onSet.lead, full: true, s: f.lead }, pad: { on: onSet.pad, full: true, s: f.pad } });
+    const ids = ["drums", "bass", "lead", "pad", "shaker", "arp", "marimba"];
+    const r = score.step(n, Object.fromEntries(ids.map((id) => [id, { on: !!onSet[id], full: true, s: f[id] }])));
     out.push(r);
   }
   return out;
 }
-const ALL = { drums: true, bass: true, lead: true, pad: true };
+const ALL = { drums: true, bass: true, lead: true, pad: true, shaker: true, arp: true, marimba: true };
 const steps = run(ALL);
 const events = steps.flatMap((r) => r.events.map((e) => ({ ...e, chord: r.chord, slot: r.slot, bar: r.bar })));
 
@@ -91,7 +97,8 @@ ok(bars.every((r) => (r.bar % 4 === 0 ? r.chord === "i" : r.bar % 4 === 3 ? ["VI
 // 6. A member that is off produces zero notes.
 const offRun = run({ drums: false, bass: true, lead: false, pad: false }).flatMap((r) => r.events);
 ok(offRun.every((e) => e.member === "bass"), "members that are off play nothing");
-ok(run({ drums: false, bass: false, lead: false, pad: false }).every((r) => r.events.length === 0), "all off: silence");
+ok(run({}).every((r) => r.events.length === 0), "all off: silence");
+for (const id of Object.keys(ALL)) ok(run({ [id]: true }).flatMap((r) => r.events).every((e) => e.member === id), `only ${id} on: only ${id} plays`);
 
 // 7. Same features twice, same notes.
 ok(JSON.stringify(run(ALL).map((r) => r.events)) === JSON.stringify(steps.map((r) => r.events)), "deterministic");
@@ -102,5 +109,20 @@ ok(drums.length > 100, `drums played (${drums.length})`);
 ok(drums.every((e) => { const s = e.slot + e.offset; return e.voice === (s % 8 === 0 ? "kick" : s % 8 === 4 ? "snare" : "hat"); }), "drum voice follows the slot");
 ok(drums.filter((e) => e.voice === "kick").every((e) => e.pan === 0), "kick centered");
 
+// Marimba: A minor pentatonic, in range, off-beat eighths only.
+const marimba = events.filter((e) => e.voice === "marimba");
+ok(marimba.length > 50, `marimba played (${marimba.length})`);
+ok(marimba.every((e) => PENT.includes(pc(e.midi)) && e.midi >= 57 && e.midi <= 69 && e.slot % 4 === 2), "marimba pentatonic, in range, off-beats only");
+// Arpeggio: chord tones of the current chord only, in range.
+const arp = events.filter((e) => e.voice === "arp");
+ok(arp.length > 50, `arpeggio played (${arp.length})`);
+ok(arp.every((e) => CH[e.chord].includes(pc(e.midi)) && e.midi >= 76 && e.midi <= 88), "arpeggio chord tones only, in range");
+// Shaker: unpitched noise only, dust on the grid, salt on off-beats.
+const shaker = events.filter((e) => e.member === "shaker");
+ok(shaker.length > 50 && shaker.every((e) => ["dust", "salt", "smoke"].includes(e.voice) && PENT.includes(pc(e.midi))), "shaker noise centers on pentatonic notes");
+ok(shaker.filter((e) => e.voice === "salt").every((e) => e.slot % 4 === 2), "sea salt on off-beats");
+// Every pitched note of every member is in A natural minor.
+ok(events.filter((e) => e.midi !== undefined).every((e) => KEY.includes(pc(e.midi))), "every pitched note in A natural minor");
+
 if (fails) { console.error(`band theory: ${fails} failed`); process.exit(1); }
-console.log(`band theory ok (${leads.length} lead, ${drums.length} drum, ${padEvents.length} pad events; worst pad move ${worst.toFixed(1)} semitones per note)`);
+console.log(`band theory ok (${leads.length} lead, ${drums.length} drum, ${padEvents.length} pad, ${marimba.length} marimba, ${arp.length} arpeggio, ${shaker.length} shaker events; worst pad move ${worst.toFixed(1)} semitones per note)`);

@@ -88,3 +88,20 @@ footer strong { color: var(--text); }
 .tag { font: 400 1rem var(--mono); color: var(--text-2); display: inline-block; }
 @media (min-width: 900px) { .strips { grid-template-columns: repeat(2, 1fr); } }
 @media (min-width: 1200px) { .strips { grid-template-columns: repeat(4, 1fr); } }
+
+/* phase 2: one pad per member, 3 columns */
+.pads.grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s3); max-width: 900px; }
+.pads.grid .pad { min-height: 96px; display: grid; align-content: center; justify-items: center; gap: 2px; padding: var(--s2) var(--s3); border: 2px solid var(--line); border-top: 6px solid var(--c); }
+.pads.grid .pad .role { margin: 0; }
+.pad-name { font-weight: 700; }
+.pads.grid .pad[aria-pressed="true"] { border: 3px solid var(--c); border-top-width: 6px; background: color-mix(in srgb, var(--c) 22%, var(--groove));
+  box-shadow: 0 0 calc(4px + var(--act) * 22px) color-mix(in srgb, var(--c) calc(var(--act) * 70%), transparent); }
+.pads.grid .pad.hit[aria-pressed="true"] { background: color-mix(in srgb, var(--c) 40%, var(--groove)); }
+.pads.grid .pad.soloed { outline: 3px dashed var(--amber); outline-offset: 3px; }
+.pad-tools { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2) var(--s4); margin-top: var(--s4); }
+.pad-tools .help { margin: 0; }
+#sparse[aria-pressed="true"] { border-color: var(--amber); }
+#cap-msg { margin-top: var(--s4); }
+.strip[hidden] { display: none; }
+@media (max-width: 480px) { .pads.grid .pad { min-height: 88px; padding: var(--s2); } }
+@media (prefers-reduced-motion: reduce) { .pads.grid .pad[aria-pressed="true"] { box-shadow: none; } }

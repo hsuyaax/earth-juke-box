@@ -120,7 +120,7 @@ Clip notes:
 - EIC versions are about 32:9. Find the real map area inside each frame; never assume it fills the frame.
 
 Clip decisions made during the build (Sat 14 Nov):
-- 5011 uses the flat-map file `iss_lightning_sos_yearly_07312023_2048p60.mp4` (0:10–0:50), not the globe.
+- 5011 uses the flat-map file `iss_lightning_sos_yearly_07312023_2048p60.mp4` (full 100 s), not the globe. 3912 uses the full 67 s.
 - 5313's EIC frame holds two copies of the world map; the clip is cropped to the left half (1280x720), grid 128x72.
 - 5669 has stills only. Aerosols use the flat, unlabeled video from SVS 5552 (`Aerosols_NoLabels_2048x1024_30fps.mp4`), same GEOS model; credit links 5552 and 5669. Sulfate (green) has no voice.
 - 5196 uses the `globe_zoom` version; the `globe_tilt` version is too dark.

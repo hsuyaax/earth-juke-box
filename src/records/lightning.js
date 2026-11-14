@@ -10,7 +10,7 @@ export default {
   blurb: "Every flash is a drum hit you can place by ear.",
   svs: 5011,
   credit: "NASA's Scientific Visualization Studio",
-  clip: "clips/lightning.mp4", // flat world map version (iss_lightning_sos_yearly), 40 s from 0:10
+  clip: "clips/lightning.mp4", // flat world map version (iss_lightning_sos_yearly), full 100 s
   mapArea: null, // full frame is the 2:1 world map
   grid: [96, 48],
   bpm: 96,
@@ -23,8 +23,8 @@ export default {
   probe: { scale: SCALES.minorPent, root: 36, amount: "v" },
   caption(s) {
     const r = s.flashRate;
-    const word = r < 5 ? "Quiet" : r < 20 ? "Some lightning" : "Busy, many flashes";
-    return r < 5 ? "Quiet: few flashes." : `${word}, mostly ${side(flashX)}.`;
+    const word = r < 3 ? "Quiet" : r < 10 ? "Some lightning" : "Busy, many flashes";
+    return r < 3 ? "Quiet: few flashes." : `${word}, mostly ${side(flashX)}.`;
   },
   notes: {
     shows: "Lightning seen by the Lightning Imaging Sensor on the International Space Station, 2017 to 2023, on a flat world map. Each yellow dot is lightning in a rolling 10-day window.",
@@ -38,7 +38,7 @@ export default {
     };
   },
   onBeat(s, v, time) {
-    const busy = Math.min(1, s.flashRate / 40); // ~40 flashes/s is a busy stretch on this clip
+    const busy = Math.min(1, s.flashRate / 15); // full clip: ~15 flashes/s at the busiest 10 s stretch (measured)
     v.rumble.set(0.05 + 0.25 * busy, time, 120 + 500 * busy);
     for (let k = 0; k < s.nFlashes; k++) {
       const f = s.flashes[k];

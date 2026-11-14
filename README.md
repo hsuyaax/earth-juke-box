@@ -35,13 +35,13 @@ Also: live natural events from [NASA EONET](https://eonet.gsfc.nasa.gov/) as map
 
 ## Testing status
 
-Not yet done: listening test and screen-reader pass. Results will be added here exactly as they happen.
+Not yet done: listening test and screen-reader pass. Scripts: `tests/LISTENING_TEST.md`, `tests/SCREEN_READER_TEST.md`. Results will be added here exactly as they happen.
 
 ## Run it
 
 ```
 npm install
-npm run dev        # http://localhost:5173
+npm run dev        # open the URL it prints (5173, or the next free port)
 npm run build      # static site in dist/
 npm test           # WAV encoder self-check
 ```

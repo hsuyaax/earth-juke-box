@@ -1,0 +1,80 @@
+/* Earth Band: the dark "record" surface from DESIGN.md. The footage, ripples and pads are the only bright things. */
+:root { color-scheme: dark; }
+* { box-sizing: border-box; }
+body { margin: 0; overflow-x: clip; background: var(--vinyl); color: var(--text); font: 18px/1.55 var(--body); }
+a { color: var(--amber); text-underline-offset: 0.18em; }
+:focus-visible { outline: 3px solid var(--amber); outline-offset: 3px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.skip { position: absolute; left: -9999px; }
+.skip:focus { left: 16px; top: 8px; background: var(--vinyl); padding: var(--s2); z-index: 1; }
+
+.top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s2) var(--s5); max-width: 1360px; margin: 0 auto; padding: var(--s4) var(--gutter) 0; }
+.brand { margin: 0; font-weight: 700; }
+.brand a { display: inline-flex; align-items: center; gap: var(--s3); min-height: 48px; color: var(--text); text-decoration: none; }
+.logo { display: inline-flex; }
+.top nav { display: flex; gap: var(--s5); }
+.top nav a { min-height: 48px; display: inline-flex; align-items: center; color: var(--text); }
+
+main, footer { max-width: 1360px; margin: 0 auto; padding: 0 var(--gutter); }
+h1 { font: 400 var(--display-m)/1 var(--display); margin: var(--s6) 0 var(--s3); }
+.beta { font-size: 0.5em; color: var(--text-2); }
+h2 { font: 700 1.25rem/1.3 var(--body); margin: 0 0 var(--s2); }
+.lead { max-width: 70ch; margin: 0 0 var(--s3); }
+.remix { max-width: 70ch; margin: 0 0 var(--s5); padding: var(--s3) var(--s4); border-left: 3px solid var(--amber); background: var(--groove); }
+
+.transport { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s3) var(--s4); margin-bottom: var(--s4); }
+button { font: inherit; color: var(--text); background: transparent; border: 2px solid var(--line); border-radius: 8px; min-height: 48px; padding: var(--s2) var(--s4); cursor: pointer; }
+button:hover { border-color: var(--text-2); }
+button.primary { background: var(--amber); color: var(--groove); border-color: var(--amber); font-weight: 700; min-width: 128px; }
+button:disabled { opacity: 0.6; cursor: progress; }
+input[type="range"] { accent-color: var(--amber); min-height: 48px; }
+.vol { display: inline-flex; align-items: center; gap: var(--s2); }
+.hint { flex: 1 1 100%; margin: 0; color: var(--text-2); }
+.notice { margin: 0 0 var(--s4); padding: var(--s3) var(--s4); border: 2px solid var(--amber); border-radius: 8px; max-width: 70ch; }
+
+/* three strips: side by side, stacked on phones */
+.strips { display: grid; gap: var(--s4); margin: 0 calc(50% - 50vw) var(--s6); padding: var(--s4) var(--gutter); background: var(--groove); }
+@media (min-width: 900px) { .strips { grid-template-columns: repeat(3, 1fr); align-items: start; } }
+.strip { margin: 0; }
+.frame { position: relative; background: #000; border: 2px solid var(--c); line-height: 0; }
+.frame video { display: block; width: 100%; height: 100%; object-fit: fill; }
+.frame canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.strip.silent .frame { border-color: var(--line); }
+.strip.silent video { opacity: 0.55; }
+.strip figcaption { margin-top: var(--s2); color: var(--text-2); }
+.role { font: 400 1rem/1.3 var(--mono); text-transform: uppercase; letter-spacing: 0.05em; color: var(--text); margin-right: var(--s2); }
+.src { font: 400 1rem var(--mono); color: var(--text-3); margin-left: var(--s2); }
+
+/* pads: 3 x 3, one row per member */
+.pads-section { margin-bottom: var(--s7); }
+.help { max-width: 70ch; color: var(--text-2); margin: 0 0 var(--s4); }
+.pads { display: grid; gap: var(--s3); max-width: 900px; }
+.pad-row { display: grid; grid-template-columns: minmax(170px, 1.2fr) repeat(3, minmax(0, 1fr)); gap: var(--s3); align-items: stretch; }
+.row-label { margin: 0; display: flex; flex-direction: column; justify-content: center; padding-left: var(--s3); border-left: 4px solid var(--c); }
+.row-label .role { margin: 0; }
+.pad { min-height: 72px; display: grid; align-content: center; gap: 2px; text-align: center; border-radius: 10px; border-color: var(--line); background: var(--groove);
+  transition: box-shadow 200ms var(--ease-out), background-color 200ms var(--ease-out); }
+.pad-k { font-weight: 700; font-size: 1.125rem; }
+.pad-s { font: 400 1rem var(--mono); color: var(--text-2); }
+/* pressed: the member's color as a solid edge and a tinted fill; text stays warm white for contrast */
+.pad[aria-pressed="true"] { border: 3px solid var(--c); background: color-mix(in srgb, var(--c) 22%, var(--groove)); }
+.pad[aria-pressed="true"] .pad-s { color: var(--text); }
+/* live activity: the On pad glows with how much its member is doing; a short pulse on beats where it sounds */
+.pad-row .pad-on[aria-pressed="true"] { box-shadow: 0 0 calc(4px + var(--act) * 22px) color-mix(in srgb, var(--c) calc(var(--act) * 70%), transparent); }
+.pad-row.hit .pad-on[aria-pressed="true"] { background: color-mix(in srgb, var(--c) 40%, var(--groove)); }
+@media (max-width: 640px) {
+  .pad-row { grid-template-columns: repeat(3, 1fr); }
+  .row-label { grid-column: 1 / -1; flex-direction: row; justify-content: flex-start; gap: var(--s2); align-items: baseline; }
+}
+
+.about { max-width: 75ch; margin-bottom: var(--s7); }
+.how { padding-left: 1.2em; }
+.how li { margin: var(--s2) 0; }
+footer { border-top: 1px solid var(--line); padding-top: var(--s4); padding-bottom: var(--s6); color: var(--text-2); }
+footer p { max-width: 90ch; }
+footer strong { color: var(--text); }
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+  .pad-row .pad-on[aria-pressed="true"] { box-shadow: none; } /* state shown by color and text only */
+}

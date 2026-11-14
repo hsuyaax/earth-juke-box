@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <title>Earth Band (beta): Earth Jukebox</title>
+  <meta name="description" content="Three NASA visualizations play together as one band: lightning on drums, ocean currents on bass, night lights on melody, each read live from its own video." />
+  <meta name="theme-color" content="#0d1b3d" />
+</head>
+<body>
+  <a class="skip" href="#pads">Skip to the pads</a>
+  <header class="top">
+    <p class="brand"><a href="./"><span class="logo" id="logo" aria-hidden="true"></span><span>Earth Jukebox</span></a></p>
+    <nav aria-label="Main">
+      <a href="play.html">Jukebox</a>
+      <a href="notes.html">How it works</a>
+    </nav>
+  </header>
+
+  <main>
+    <h1>Earth Band <span class="beta">(beta)</span></h1>
+    <p class="lead">Three NASA visualizations play together as one band, each read live from its own video, on one beat and one scale. Lightning is the drums, ocean currents the bass, night lights the melody. Every note comes from a frame; the pads only switch parts on, off, or thinner.</p>
+    <p class="remix"><strong>An artistic remix.</strong> These three visualizations cover different years and are played together, not as simultaneous events.</p>
+
+    <div class="transport" role="group" aria-label="Player">
+      <button id="play" class="primary" type="button">Play</button>
+      <label class="vol"><span>Volume</span><input id="volume" type="range" min="0" max="100" value="50" /></label>
+      <button id="wav-btn" type="button">Save 20 s as WAV</button>
+      <p class="hint" id="hint">Only the bass is on to start. Switch on the drums or the melody to add them.</p>
+    </div>
+    <p id="perf-notice" class="notice" hidden></p>
+
+    <section class="strips" aria-label="The three members">
+      <figure class="strip" data-member="drums" style="--c: #FFF3B0">
+        <div class="frame" style="aspect-ratio: 2 / 1"><video muted playsinline loop preload="auto" aria-hidden="true" tabindex="-1"></video><canvas aria-hidden="true"></canvas></div>
+        <figcaption><span class="role">Drums</span> Lightning from the ISS, 2017–2023 <span class="src">SVS 5011</span></figcaption>
+      </figure>
+      <figure class="strip" data-member="bass" style="--c: #5CC8FF">
+        <div class="frame" style="aspect-ratio: 2 / 1"><video muted playsinline loop preload="auto" aria-hidden="true" tabindex="-1"></video><canvas aria-hidden="true"></canvas></div>
+        <figcaption><span class="role">Bass</span> Sea surface currents and temperature, 2005–2007 <span class="src">SVS 3912</span></figcaption>
+      </figure>
+      <figure class="strip" data-member="melody" style="--c: #9B7BFF">
+        <div class="frame" style="aspect-ratio: 16 / 9"><video muted playsinline loop preload="auto" aria-hidden="true" tabindex="-1"></video><canvas aria-hidden="true"></canvas></div>
+        <figcaption><span class="role">Melody</span> Night lights, 2012–2023 <span class="src">SVS 5313</span></figcaption>
+      </figure>
+    </section>
+
+    <section class="pads-section" aria-labelledby="pads-h">
+      <h2 id="pads-h">Pads</h2>
+      <p id="pads-help" class="help">Arrow keys move between pads. Space or Enter switches a pad. Hold Solo to hear one member alone, and let go to return. Escape stops all sound.</p>
+      <div id="pads" class="pads" role="group" aria-labelledby="pads-h" aria-describedby="pads-help"></div>
+    </section>
+
+    <section class="about" aria-labelledby="how-h">
+      <h2 id="how-h">What each member plays</h2>
+      <ul id="how" class="how"></ul>
+      <p>Pan is left and right on each member's own map, pitch is height on its map within that member's range, loudness is how much. One scale for all three: A minor pentatonic. The bass note follows the warm share of the water, scaled to the range it actually covers in this clip (35.7 to 40.0 percent), so the bass moves as the seasons turn.</p>
+    </section>
+  </main>
+
+  <div id="status" class="sr" role="status" aria-live="polite"></div>
+  <!-- The shared audio module (src/audio.js) draws jukebox ripples into a #ripples canvas; the band has its own layers, so this one stays hidden. -->
+  <canvas id="ripples" hidden aria-hidden="true"></canvas>
+
+  <footer>
+    <p><strong>Not an official NASA product.</strong> A sonification of NASA visualizations, not of the raw data; values read from colors are approximate.</p>
+    <p>Visualizations: NASA's Scientific Visualization Studio (<a href="https://svs.gsfc.nasa.gov/5011/">5011</a>, <a href="https://svs.gsfc.nasa.gov/5313/">5313</a>); NASA/Goddard Space Flight Center Scientific Visualization Studio (<a href="https://svs.gsfc.nasa.gov/3912/">3912</a>). Clips reduced in size and frame rate for the band.</p>
+  </footer>
+  <script type="module" src="/src/band/main.js"></script>
+</body>
+</html>

@@ -2,3 +2,7 @@ node_modules
 dist
 raw
 .gstack/
+.serena/
+AGENTS.md
+BUILD_PLAN.md
+DESIGN.md

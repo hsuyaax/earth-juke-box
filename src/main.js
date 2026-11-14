@@ -7,7 +7,7 @@ import "@fontsource/instrument-serif/400.css";
 import "./tokens.css";
 import "./style.css";
 import { coverSVG } from "./covers.js";
-import { logoSVG } from "./logo.js";
+import { logoSVG, pulseLogo } from "./logo.js";
 import { createAnalyzer } from "./analysis.js";
 import { withVoices, setVolume, silenceDrones, RAGAS, setScaleOverride, startRecording, stopRecordingAsWav } from "./audio.js";
 import { setView, clearRipples, setMarkers } from "./ripples.js";
@@ -87,6 +87,8 @@ setInterval(() => {
 transport.scheduleRepeat((time) => {
   if (rec?.v && state.ready) rec.onBeat(state, rec.v, time, beat++);
 }, "8n");
+// The header logo sends one ring out on each beat of the live audio (draw only, no sound).
+transport.scheduleRepeat((time) => { Tone.getDraw().schedule(() => pulseLogo($("logo")), time); }, "4n");
 
 // ---- records ----
 const shelf = $("shelf"), shelfMore = $("shelf-more");

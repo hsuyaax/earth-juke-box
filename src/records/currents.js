@@ -27,8 +27,12 @@ export default {
     return {
       warm: makePool(FAMILY.warm, { color: COLORS.warm, scale: SCALES.majorPent, root: 45 }),
       cold: makePool(FAMILY.cold, { color: COLORS.cold, scale: SCALES.majorPent, root: 45 }),
-      warmPad: makeDrone(new Tone.FatOscillator("A2", "triangle", 25), { cutoff: 700 }),
-      coldPad: makeDrone(new Tone.FMOscillator({ frequency: "E5", harmonicity: 3.5, modulationIndex: 2 }), { cutoff: 4000 }),
+      // Pads are held for the whole piece, so they must be gentle. Measured on the real output: the old cold pad (E5, FM ratio 3.5,
+      // lowpass 4 kHz) was the only source of bright sound, a constant whistle with sidebands near 1.6, 3 and 4 kHz, and the old warm
+      // pad's 25-cent detune made a slow wobble. Now: cold pad an octave and a half lower with an integer ratio, so its overtones
+      // fall on harmonics, and a lower cutoff; warm pad detuned by only 8 cents.
+      warmPad: makeDrone(new Tone.FatOscillator("A2", "triangle", 8), { cutoff: 700 }),
+      coldPad: makeDrone(new Tone.FMOscillator({ frequency: "E4", harmonicity: 2, modulationIndex: 0.8 }), { cutoff: 1600 }),
     };
   },
   onBeat(s, v, time, beat) {

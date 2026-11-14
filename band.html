@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
   <title>Earth Band (beta): Earth Jukebox</title>
-  <meta name="description" content="Three NASA visualizations play together as one band: lightning on drums, ocean currents on bass, night lights on melody, each read live from its own video." />
+  <meta name="description" content="NASA visualizations play together as one band: lightning on drums, ocean currents on bass, night lights on lead, CO2 on the harmony pad, each read live from its own video." />
   <meta name="theme-color" content="#0d1b3d" />
 </head>
 <body>
@@ -20,18 +20,24 @@
 
   <main>
     <h1>Earth Band <span class="beta">(beta)</span></h1>
-    <p class="lead">Three NASA visualizations play together as one band, each read live from its own video, on one beat and one scale. Lightning is the drums, ocean currents the bass, night lights the melody. Every note comes from a frame; the pads only switch parts on, off, or thinner.</p>
-    <p class="remix"><strong>An artistic remix.</strong> These three visualizations cover different years and are played together, not as simultaneous events.</p>
+    <p class="lead">NASA visualizations play together as one band, each read live from its own video, on one beat and in one key. Lightning is the drum kit, ocean currents the bass, night lights the lead, CO2 the harmony pad.</p>
+    <p class="lead"><strong>The data decides when, where, how much, and which way the harmony moves. Music theory decides which exact notes are allowed.</strong> Every note comes from a frame; the pads only switch parts on, off, or thinner.</p>
+    <p class="remix"><strong>An artistic remix.</strong> These visualizations cover different years and are played together, not as simultaneous events.</p>
 
     <div class="transport" role="group" aria-label="Player">
       <button id="play" class="primary" type="button">Play</button>
       <label class="vol"><span>Volume</span><input id="volume" type="range" min="0" max="100" value="50" /></label>
       <button id="wav-btn" type="button">Save 20 s as WAV</button>
-      <p class="hint" id="hint">Only the bass is on to start. Switch on the drums or the melody to add them.</p>
+      <p class="hint" id="hint">Only the bass is on to start. Switch on the other members to add them.</p>
     </div>
     <p id="perf-notice" class="notice" hidden></p>
 
-    <section class="strips" aria-label="The three members">
+    <div class="harmony">
+      <p class="chord"><span class="role">Chord</span> <strong id="chord-name">–</strong> <span class="role">Tension</span> <span id="tension">–</span></p>
+      <label class="check"><input type="checkbox" id="speak-chords" checked /> Announce chord changes</label>
+    </div>
+
+    <section class="strips" aria-label="The members">
       <figure class="strip" data-member="drums" style="--c: #FFF3B0">
         <div class="frame" style="aspect-ratio: 2 / 1"><video muted playsinline loop preload="auto" aria-hidden="true" tabindex="-1"></video><canvas aria-hidden="true"></canvas></div>
         <figcaption><span class="role">Drums</span> Lightning from the ISS, 2017–2023 <span class="src">SVS 5011</span></figcaption>
@@ -40,9 +46,13 @@
         <div class="frame" style="aspect-ratio: 2 / 1"><video muted playsinline loop preload="auto" aria-hidden="true" tabindex="-1"></video><canvas aria-hidden="true"></canvas></div>
         <figcaption><span class="role">Bass</span> Sea surface currents and temperature, 2005–2007 <span class="src">SVS 3912</span></figcaption>
       </figure>
-      <figure class="strip" data-member="melody" style="--c: #9B7BFF">
+      <figure class="strip" data-member="lead" style="--c: #9B7BFF">
         <div class="frame" style="aspect-ratio: 16 / 9"><video muted playsinline loop preload="auto" aria-hidden="true" tabindex="-1"></video><canvas aria-hidden="true"></canvas></div>
-        <figcaption><span class="role">Melody</span> Night lights, 2012–2023 <span class="src">SVS 5313</span></figcaption>
+        <figcaption><span class="role">Lead</span> Night lights, 2012–2023 <span class="src">SVS 5313</span></figcaption>
+      </figure>
+      <figure class="strip" data-member="pad" style="--c: #FF8A3D">
+        <div class="frame" style="aspect-ratio: 16 / 9"><video muted playsinline loop preload="auto" aria-hidden="true" tabindex="-1"></video><canvas aria-hidden="true"></canvas></div>
+        <figcaption><span class="role">Pad</span> DYAMOND carbon dioxide <span class="src">SVS 5196</span> <span class="tag">Artistic, not geographic</span></figcaption>
       </figure>
     </section>
 
@@ -55,7 +65,7 @@
     <section class="about" aria-labelledby="how-h">
       <h2 id="how-h">What each member plays</h2>
       <ul id="how" class="how"></ul>
-      <p>Pan is left and right on each member's own map, pitch is height on its map within that member's range, loudness is how much. One scale for all three: A minor pentatonic. The bass note follows the warm share of the water, scaled to the range it actually covers in this clip (35.7 to 40.0 percent), so the bass moves as the seasons turn.</p>
+      <p>The key is A minor. The lead keeps to A minor pentatonic, and on beats 1 and 3 it moves to a tone of the current chord when one is within two scale steps. Chords change on bar lines in four-bar phrases that always start on A minor and lead back to it; how active the switched-on members are decides which way the phrase goes (calm: A minor, F, C, G; busy: A minor, D minor, E minor, E minor). The bass takes its warm share scaled to the range it actually covers in this clip (35.7 to 40.0 percent). Lightning, currents and night lights are flat maps, so left and right still mean where; CO2 has a moving camera, so it sits in the middle.</p>
     </section>
   </main>
 
@@ -65,7 +75,7 @@
 
   <footer>
     <p><strong>Not an official NASA product.</strong> A sonification of NASA visualizations, not of the raw data; values read from colors are approximate.</p>
-    <p>Visualizations: NASA's Scientific Visualization Studio (<a href="https://svs.gsfc.nasa.gov/5011/">5011</a>, <a href="https://svs.gsfc.nasa.gov/5313/">5313</a>); NASA/Goddard Space Flight Center Scientific Visualization Studio (<a href="https://svs.gsfc.nasa.gov/3912/">3912</a>). Clips reduced in size and frame rate for the band.</p>
+    <p>Visualizations: NASA's Scientific Visualization Studio (<a href="https://svs.gsfc.nasa.gov/5011/">5011</a>, <a href="https://svs.gsfc.nasa.gov/5313/">5313</a>, <a href="https://svs.gsfc.nasa.gov/5196/">5196</a>); NASA/Goddard Space Flight Center Scientific Visualization Studio (<a href="https://svs.gsfc.nasa.gov/3912/">3912</a>). Clips reduced in size and frame rate for the band. All sound is synthesized in your browser.</p>
   </footer>
   <script type="module" src="/src/band/main.js"></script>
 </body>

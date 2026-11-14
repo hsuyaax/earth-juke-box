@@ -22,7 +22,7 @@ self.onmessage = ({ data }) => {
   self.postMessage({
     W: s.W, H: s.H, cls: s.cls, motion: s.motion, v: s.v, classFracS: s.classFracS,
     flashes: s.flashes.slice(0, s.nFlashes).map((f) => [f.x, f.y, f.power]),
-    flashRate: s.flashRate, motionS: s.motionS, meanS: s.meanS, ms: performance.now() - t0,
+    flashRate: s.flashRate, motionS: s.motionS, meanS: s.meanS, bx: s.bx, by: s.by, ms: performance.now() - t0,
   });
   s.nFlashes = 0; // handed to the page, which keeps them until a beat uses them
 };

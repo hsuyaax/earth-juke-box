@@ -78,3 +78,13 @@ footer strong { color: var(--text); }
   * { transition: none !important; animation: none !important; }
   .pad-row .pad-on[aria-pressed="true"] { box-shadow: none; } /* state shown by color and text only */
 }
+
+/* harmony: chord name and tension, so people can see the harmony follow the planet */
+.harmony { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2) var(--s5); margin: 0 0 var(--s4); }
+.chord { margin: 0; display: flex; align-items: baseline; gap: var(--s2) var(--s3); }
+.chord strong { font: 400 2rem/1 var(--display); min-width: 2.2em; }
+.check { display: inline-flex; align-items: center; gap: var(--s2); min-height: 48px; }
+.check input { width: 22px; height: 22px; accent-color: var(--amber); }
+.tag { font: 400 1rem var(--mono); color: var(--text-2); display: inline-block; }
+@media (min-width: 900px) { .strips { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1200px) { .strips { grid-template-columns: repeat(4, 1fr); } }

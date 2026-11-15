@@ -72,12 +72,12 @@ async function loadAudio() {
   const Tone = await import("tone");
   // "playback" latency gives larger audio buffers: fewer dropouts on phones while several videos decode. Notes are
   // scheduled ahead on the grid anyway, so the extra latency only delays a pad change by a fraction of a beat.
-  Tone.setContext(new Tone.Context({ latencyHint: "playback", lookAhead: 0.15 }));
+  Tone.setContext(new Tone.Context({ latencyHint: "playback", lookAhead: 0.25 }));
   const audio = await import("../audio.js"); // master gain + limiter, in this context
   await Tone.start();
   const transport = Tone.getTransport();
   transport.bpm.value = BPM;
-  const reverb = new Tone.Reverb({ decay: 2.5, wet: 1 }).connect(audio.master); // one shared send, kept low
+  const reverb = new Tone.Reverb({ decay: 2.0, wet: 0.7 }).connect(audio.master); // one shared send, kept low
   await reverb.ready;
   const hz = (m) => Tone.Frequency(m, "midi").toFrequency();
   const chain = (m, send) => { // member gain -> master, plus a send to the reverb after the gain (an off member sends nothing)
@@ -99,9 +99,9 @@ async function loadAudio() {
     .connect(new Tone.Filter(7000, "highpass").connect(hatPan));
   // Bass (3.7): saw through a lowpass, the only pitched part below 110 Hz, no reverb.
   const bassPan = new Tone.Panner(0).connect(chain(byId.bass, 0));
-  const bass = new Tone.MonoSynth({ oscillator: { type: "sawtooth" }, filter: { Q: 2, type: "lowpass" },
-    filterEnvelope: { attack: 0.005, decay: 0.2, sustain: 0.3, baseFrequency: 90, octaves: 2.6 },
-    envelope: { attack: 0.005, decay: 0.25, sustain: 0.6, release: 0.25 }, volume: -8 }).connect(bassPan);
+  const bass = new Tone.MonoSynth({ oscillator: { type: "sawtooth" }, filter: { Q: 1, type: "lowpass" },
+    filterEnvelope: { attack: 0.008, decay: 0.25, sustain: 0.25, baseFrequency: 80, octaves: 2.2 },
+    envelope: { attack: 0.008, decay: 0.3, sustain: 0.5, release: 0.3 }, volume: -10 }).connect(bassPan);
   // Lead (3.6): triangle synth, two voices so a note's tail can ring under the next.
   const leadOut = hp(chain(byId.lead, 0.18));
   const leads = [0, 1].map(() => { const pan = new Tone.Panner(0).connect(leadOut); return { pan, synth: new Tone.Synth({ oscillator: { type: "triangle" },
@@ -110,11 +110,11 @@ async function loadAudio() {
   // Pad (3.9): slow triangle PolySynth through a lowpass that density opens; centered.
   const padFilter = new Tone.Filter(2400, "lowpass").connect(hp(chain(byId.pad, 0.3), 100));
   const pad = new Tone.PolySynth(Tone.Synth, { maxPolyphony: 8, oscillator: { type: "triangle" },
-    envelope: { attack: 0.8, decay: 0.4, sustain: 0.8, release: 1.6 }, volume: -16 }).connect(padFilter);
+    envelope: { attack: 1.0, decay: 0.5, sustain: 0.7, release: 2.0 }, volume: -18 }).connect(padFilter);
   // Shaker and atmosphere (3.9): the existing dust, sea-salt and smoke noise voices (src/audio.js), brought to the guide's levels.
   const shOut = hp(chain(byId.shaker, 0.1));
   const noise = (make, trim) => { const pan = new Tone.Panner(0).connect(shOut); return { pan, synth: make().connect(new Tone.Volume(trim).connect(pan)) }; };
-  const sh = { dust: noise(audio.FAMILY.dust, -12), salt: noise(audio.FAMILY.salt, -12), smoke: noise(audio.FAMILY.smoke, -18) };
+  const sh = { dust: noise(audio.FAMILY.dust, -18), salt: noise(audio.FAMILY.salt, -16), smoke: noise(audio.FAMILY.smoke, -24) };
   // Arpeggio (3.9): short FM bell, integer ratio so its overtones stay consonant; two fixed pans, alternating.
   const arpOut = hp(chain(byId.arp, 0.2));
   const arps = [-0.5, 0.5].map((p) => new Tone.FMSynth({ harmonicity: 3, modulationIndex: 2, envelope: { attack: 0.002, decay: 0.25, sustain: 0, release: 0.2 },
@@ -128,12 +128,12 @@ async function loadAudio() {
   const strings = new Tone.MonoSynth({ oscillator: { type: "sawtooth" }, portamento: 0.3, filter: { type: "lowpass", Q: 0.5 },
     filterEnvelope: { attack: 0.6, decay: 0.5, sustain: 0.7, baseFrequency: 500, octaves: 1.6 },
     envelope: { attack: 0.6, decay: 0.3, sustain: 0.8, release: 1.2 }, volume: -16 })
-    .connect(new Tone.Chorus(1.5, 3, 0.4).start().connect(new Tone.Panner(-0.3).connect(hp(chain(byId.strings, 0.25)))));
+    .connect(new Tone.Chorus(1.5, 2.5, 0.25).start().connect(new Tone.Panner(-0.3).connect(hp(chain(byId.strings, 0.2)))));
   // Drone (3.9): A2 and E3 held, through a lowpass and a tremolo, faded in and out; never changes pitch.
   const droneGain = new Tone.Gain(0).connect(hp(chain(byId.drone, 0.15), 100));
   const tremolo = new Tone.Tremolo(1, 0.5).start().connect(droneGain);
   const droneFilter = new Tone.Filter(400, "lowpass").connect(tremolo);
-  const droneOscs = [hz(45), hz(52)].map((f) => new Tone.Oscillator({ frequency: f, type: "triangle", volume: -20 }).connect(droneFilter));
+  const droneOscs = [hz(45), hz(52)].map((f) => new Tone.Oscillator({ frequency: f, type: "triangle", volume: -24 }).connect(droneFilter));
   let droneStarted = false;
 
   const SIXTEENTH = 60 / BPM / 4;
@@ -148,9 +148,10 @@ async function loadAudio() {
       case "pad": { // keep common tones sounding; release only what leaves, attack only what arrives
         const prev = e.prev || [];
         const leaving = prev.filter((n) => !e.midis.includes(n)), arriving = e.midis.filter((n) => !prev.includes(n));
-        if (leaving.length) pad.triggerRelease(leaving.map(hz), t);
+        // Guard: releaseAll before re-voicing avoids PolySynth clicks from releasing notes it lost track of
+        if (leaving.length) { try { pad.triggerRelease(leaving.map(hz), t); } catch { pad.releaseAll(t); } }
         if (arriving.length) pad.triggerAttack(arriving.map(hz), t, e.vel);
-        padFilter.frequency.rampTo(e.cutoff, 1.5, t);
+        padFilter.frequency.rampTo(e.cutoff, 2.0, t);
         break;
       }
       case "padOff": pad.releaseAll(t); break;
@@ -177,7 +178,7 @@ async function loadAudio() {
     for (const e of r.events) play(e, time);
     if (r.slot % 4 === 0) Tone.getDraw().schedule(() => { M.forEach((m) => { m.activity = m.on ? r.activity[m.id] : 0; }); glow(); if (r.slot === 0) { showChord(r); deckGlow.breathe(); } }, time);
   }, "16n");
-  A = { Tone, audio, transport, release: () => { pad.releaseAll(); strings.triggerRelease(); droneGain.gain.rampTo(0, 0.3); } };
+  A = { Tone, audio, transport, release: () => { pad.releaseAll(); try { strings.triggerRelease(); } catch {} droneGain.gain.rampTo(0, 0.5); bass.triggerRelease(); } };
   return A;
 }
 
@@ -204,7 +205,7 @@ function render() {
     b.querySelector(".pad-s").textContent = [m.on ? "On" : "Off", m.on && !m.full ? "sparse" : "", m.solo ? "solo" : ""].filter(Boolean).join(" · ");
     b.classList.toggle("soloed", m.solo);
     m.strip.hidden = !m.on;
-    if (m.out) m.out.gain.rampTo(audible(m) ? 1 : 0, 0.05);
+    if (m.out) m.out.gain.rampTo(audible(m) ? 1 : 0, 0.15);
     if (!audible(m)) m.layer.clear();
   });
   sparseBtn.textContent = `Sparse: ${target.role}`;

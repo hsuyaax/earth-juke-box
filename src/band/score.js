@@ -121,9 +121,9 @@ export function createScore() {
       for (let i = 0; i < s.W * s.H; i++) { const c = s.cls[i]; if (c) { cx[c] += i % s.W; cy[c] += Math.floor(i / s.W); cn[c]++; } }
       const at = (c) => (cn[c] ? [(cx[c] / cn[c] + 0.5) / s.W, (cy[c] / cn[c] + 0.5) / s.H] : [0.5, 0.5]);
       const dust = norm(s.classFracS[1], NORM.dust), smoke = norm(s.classFracS[2], NORM.smoke), salt = norm(s.classFracS[3], NORM.salt);
-      if (cn[1] && (sh.full || slot % 2 === 0)) { const [x, y] = at(1); events.push({ member: "shaker", voice: "dust", vel: 0.15 + 0.6 * dust, dur: "32n", midi: melodyNote(1 - y, DUST_RANGE, chord, false), offset: 0, pan: x * 2 - 1, x, y }); }
-      if (cn[3] && slot % 4 === 2 && (sh.full || slot % 8 === 6)) { const [x, y] = at(3); events.push({ member: "shaker", voice: "salt", vel: 0.2 + 0.6 * salt, dur: "16n", midi: melodyNote(1 - y, SALT_RANGE, chord, false), offset: 0, pan: x * 2 - 1, x, y }); }
-      if (cn[2] && slot === 0 && smoke > 0.2) { const [x, y] = at(2); events.push({ member: "shaker", voice: "smoke", vel: 0.2 + 0.6 * smoke, dur: "1m", midi: melodyNote(1 - y, SMOKE_RANGE, chord, true), offset: 0, pan: x * 2 - 1, x, y }); }
+      if (cn[1] && slot % 2 === 0 && (sh.full || slot % 4 === 0)) { const [x, y] = at(1); events.push({ member: "shaker", voice: "dust", vel: 0.1 + 0.4 * dust, dur: "32n", midi: melodyNote(1 - y, DUST_RANGE, chord, false), offset: 0, pan: x * 2 - 1, x, y }); }
+      if (cn[3] && slot % 4 === 2 && (sh.full || slot % 8 === 6)) { const [x, y] = at(3); events.push({ member: "shaker", voice: "salt", vel: 0.15 + 0.45 * salt, dur: "16n", midi: melodyNote(1 - y, SALT_RANGE, chord, false), offset: 0, pan: x * 2 - 1, x, y }); }
+      if (cn[2] && slot === 0 && smoke > 0.15) { const [x, y] = at(2); events.push({ member: "shaker", voice: "smoke", vel: 0.15 + 0.45 * smoke, dur: "1m", midi: melodyNote(1 - y, SMOKE_RANGE, chord, true), offset: 0, pan: x * 2 - 1, x, y }); }
     }
 
     // Arpeggio (Perpetual Ocean, moving camera): chord tones only, up then down; motion sets the rate, brightness the span.

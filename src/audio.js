@@ -1,5 +1,7 @@
 import * as Tone from "tone";
 import { addRipple } from "./ripples.js";
+import { RAGAS, ragaNote, droneNotes } from "./ragas.js";
+export { RAGAS };
 
 // Master chain: every sound goes through here (AGENTS.md §8, §18).
 const limiter = new Tone.Limiter(-3).toDestination();
@@ -60,23 +62,36 @@ export const FAMILY = {
 // One color per voice; ripples use it.
 export const COLORS = { crack: "#FFF3B0", warm: "#FF6B6B", cold: "#5CC8FF", pluckA: "#9B7BFF", pluckB: "#FF8A3D", light: "#FFC25C", dust: "#C39BDB", smoke: "#D2604A", salt: "#86AAA8", neutral: "#F4EFE6", alert: "#FF5C5C" };
 
-// Scale presets are data (D7). Ragas are experimental until a teammate with a musical ear approves them.
-export const RAGAS = {
-  bhupali: { name: "Raga Bhupali (calm)", notes: [0, 2, 4, 7, 9] },
-  durga: { name: "Raga Durga (calm)", notes: [0, 2, 5, 7, 9] },
-  malkauns: { name: "Raga Malkauns (tense)", notes: [0, 3, 5, 8, 10] },
-  yaman: { name: "Raga Yaman (evening)", notes: [0, 2, 4, 6, 7, 9, 11] },
-};
-let scaleOverride = null;
-export function setScaleOverride(notes) { scaleOverride = notes; }
+// Scales inspired by ragas (src/ragas.js, experimental). When one is on, every pooled note uses it on the shared tonic,
+// leaning on its strong notes on strong beats and resolving to the tonic at the end of a bar. With none on, notes are
+// exactly as before (noteAt with the record's own scale).
+let raga = null;
+export function setRaga(r) { raga = r; }
+export const currentRaga = () => raga;
+let beatCtx = { strong: false, end: false }; // set by the beat clock before each beat
+export function setBeatContext(c) { beatCtx = c; }
 
-// Audition: play the chosen scale up one octave, so changing the Scale control is audible at once (even paused).
-// One small synth straight into the master chain (and its limiter); it only ever plays after a user picks a scale.
+// The reference drone while a raga is on: the tonic and its fifth (fourth for Malkauns), low and soft. A fixed reference
+// tone, not data; only its loudness follows the picture's overall brightness. Silenced with the other drones on pause.
+let ragaDrones = null;
+export function ragaDrone(level, time) {
+  if (!raga && !ragaDrones) return;
+  ragaDrones ||= [0, 1].map(() => makeDrone(new Tone.FatOscillator("C2", "sawtooth", 6), { cutoff: 700 }));
+  const notes = raga ? droneNotes(raga, 48) : null;
+  ragaDrones.forEach((d, k) => {
+    if (notes) d.source.frequency.setValueAtTime(Tone.Frequency(notes[k], "midi").toFrequency(), time);
+    d.set(raga ? level : 0, time);
+  });
+}
+
+// "Hear this scale": the scale once up and once down from the shared tonic, so presets can be compared directly.
+// One small synth straight into the master chain (and its limiter); it only plays when asked.
 let auditionSynth = null;
 export function auditionScale(notes, rootMidi = 60) {
   auditionSynth ||= new Tone.Synth({ oscillator: { type: "triangle" }, envelope: { attack: 0.01, decay: 0.25, sustain: 0, release: 0.3 }, volume: -12 }).connect(master);
-  const t0 = Tone.now() + 0.05, step = 0.2;
-  [...notes, 12].forEach((n, i) => auditionSynth.triggerAttackRelease(Tone.Frequency(rootMidi + n, "midi").toFrequency(), 0.18, t0 + i * step, 0.8));
+  const t0 = Tone.now() + 0.05, step = 0.2, up = [...notes, 12];
+  [...up, ...up.slice(0, -1).reverse()].forEach((n, i) => auditionSynth.triggerAttackRelease(Tone.Frequency(rootMidi + n, "midi").toFrequency(), 0.18, t0 + i * step, 0.8));
+  return up.length * 2 - 1;
 }
 
 // A pool of one instrument. play(x, y, vel, dur, time): x,y are 0..1 map coords.
@@ -90,7 +105,8 @@ export function makePool(makeSynth, { color, scale, root = 48, octaves = 3, size
   const play = (x, y, vel, dur, time, rippleColor = color) => {
     const v = voices[n++ % size];
     v.pan.pan.setValueAtTime(x * 2 - 1, time);
-    v.synth.triggerAttackRelease(noteAt(1 - y, scaleOverride || scale, root, octaves), dur, time, vel);
+    const freq = raga ? Tone.Frequency(ragaNote(1 - y, raga, root, octaves, beatCtx), "midi").toFrequency() : noteAt(1 - y, scale, root, octaves);
+    v.synth.triggerAttackRelease(freq, dur, time, vel);
     Tone.getDraw().schedule(() => addRipple(x, y, rippleColor, vel), time);
   };
   play.dispose = () => voices.forEach((v) => { v.synth.dispose(); v.pan.dispose(); });
@@ -105,7 +121,7 @@ export function makeDrone(source, { cutoff = 800, pan = 0, out = musicBus } = {}
   const filter = keep(new Tone.Filter(cutoff, "lowpass").connect(gain));
   keep(source.connect(filter).start());
   const d = {
-    gainNode: gain,
+    gainNode: gain, source,
     set(level, time, hz) {
       gain.gain.rampTo(level, 0.25, time);
       if (hz) filter.frequency.rampTo(hz, 0.25, time);

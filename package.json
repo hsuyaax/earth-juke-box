@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "node tests/wav_check.mjs && node tests/engine_check.mjs && node tests/band_theory_check.mjs",
+    "test": "node tests/wav_check.mjs && node tests/engine_check.mjs && node tests/band_theory_check.mjs && node tests/raga_check.mjs",
     "test:clips": "node tests/engine_regress.mjs"
   },
   "dependencies": {

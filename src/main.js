@@ -11,7 +11,7 @@ import { coverHTML, INK } from "./covers.js";
 import { logoSVG, pulseLogo } from "./logo.js";
 import { createGlow } from "./glow.js";
 import { createAnalyzer } from "./analysis.js";
-import { withVoices, setVolume, silenceDrones, RAGAS, setScaleOverride, auditionScale, startRecording, stopRecordingAsWav } from "./audio.js";
+import { withVoices, setVolume, silenceDrones, RAGAS, setRaga, setBeatContext, ragaDrone, auditionScale, startRecording, stopRecordingAsWav } from "./audio.js";
 import { setView, clearRipples, setMarkers } from "./ripples.js";
 import { createEonet, events } from "./eonet.js";
 import { setOverlayRecord, toggleOverlay, drawOverlay } from "./overlay.js";
@@ -88,6 +88,9 @@ setInterval(() => {
   if (text !== caption.textContent) caption.textContent = text;
 }, 6000);
 transport.scheduleRepeat((time) => {
+  if (beat % 8 === 0 && pendingRaga !== undefined) { setRaga(melodic(rec) ? pendingRaga : null); pendingRaga = undefined; } // switches land on a bar line
+  setBeatContext({ strong: beat % 4 === 0, end: beat % 8 === 7 }); // beats 1 and 3 are strong; the last eighth ends the bar
+  if (state.ready) ragaDrone(0.05 + 0.1 * Math.min(1, state.meanS * 2), time);
   if (rec?.v && state.ready) rec.onBeat(state, rec.v, time, beat++);
 }, "8n");
 // The header logo sends one ring out on each beat of the live audio (draw only, no sound).
@@ -128,6 +131,7 @@ async function select(i) {
   refreshMarkers();
   showState();
   $("notes-title").textContent = rec.title;
+  showScaleTool();
   const ink = INK[rec.id] || INK.today;
   document.documentElement.style.setProperty("--ink", ink); // the record's ink drives the Play ring, scrub fill, glow and sleeve accent
   $("np-num").textContent = String(i + 1).padStart(2, "0");
@@ -254,20 +258,28 @@ exploreBtn.addEventListener("click", () => setExplore(pad.hidden));
 $("describe").addEventListener("click", () => { unlockAudio(); probe.describe(); });
 $("legend-btn").addEventListener("click", async () => { await unlockAudio(); probe.legend((t) => { caption.textContent = t; }); });
 
-// ---- scale presets (experimental) ----
+// ---- scales inspired by ragas (experimental) ----
+// Shown only on records with a pitched melody; hidden on drum-led lightning and on aerosols (pitched noise).
+const melodic = (r) => !!r && r.id !== "lightning" && r.id !== "aerosols";
+let pendingRaga; // chosen, waiting for the next bar line
 const scaleSel = $("scale");
 for (const [id, r] of Object.entries(RAGAS)) scaleSel.add(new Option(r.name, id));
-scaleSel.addEventListener("change", async () => {
-  const raga = RAGAS[scaleSel.value];
-  setScaleOverride(raga?.notes || null);
-  const own = rec.probe.scale, notes = raga?.notes || own;
-  const same = raga && notes.length === own.length && notes.every((n, i) => n === own[i]);
-  say(raga
-    ? `${raga.name} on. Experimental.${same ? " Same notes as this record's default scale." : ""} Playing the scale.`
-    : "Default scales. Playing the scale.");
-  await unlockAudio(); // choosing a scale is a user action
-  auditionScale(notes, 60 + (rec.probe.root % 12));
+scaleSel.addEventListener("change", () => {
+  const raga = RAGAS[scaleSel.value] || null;
+  if (video.paused) setRaga(raga); else pendingRaga = raga; // while playing, the change lands on the next bar
+  say(raga ? `${raga.name.split(":")[0]} on${video.paused ? "" : " from the next bar"}. A quiet drone holds the home note: a fixed reference tone, not data.` : "Default scales.");
 });
+$("hear-scale").addEventListener("click", async () => {
+  await unlockAudio();
+  const raga = RAGAS[scaleSel.value];
+  auditionScale(raga ? raga.notes : rec.probe.scale, raga ? 60 : 60 + (rec.probe.root % 12));
+  say(`Playing ${raga ? raga.name.split(":")[0] : "the default scale"} up and down.`);
+});
+function showScaleTool() {
+  const on = melodic(rec);
+  document.querySelectorAll(".scale-only").forEach((el) => { el.hidden = !on; });
+  setRaga(on ? RAGAS[scaleSel.value] || null : null);
+}
 
 // ---- WAV export ----
 const wavBtn = $("wav-btn");

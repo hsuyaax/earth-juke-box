@@ -211,3 +211,5 @@ footer { border-top: 1px solid var(--line); padding-top: var(--s4); padding-bott
   .np-num, .np-title, .np-caption { margin-left: 42px; }
   .np-caption { letter-spacing: 0; }
 }
+
+.scale-only[hidden] { display: none; }

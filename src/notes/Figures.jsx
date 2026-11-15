@@ -25,7 +25,7 @@ function Figure({ n, side, title, desc, caption, steps, wide = true, tallMax = 3
   return (
     <figure className="fig" id={id}>
       <div className="fig-panel">
-        <span className="fig-side mono" aria-hidden="true">FIG.00{n} · {side}</span>
+        <span className="fig-side mono" aria-hidden="true">PLATE {n + 3} · FIG.00{n} · {side}</span>
         <div ref={box} className="fig-inner">
           <svg viewBox={vb} style={narrow ? { maxWidth: tallMax } : undefined} role="img" aria-labelledby={`${id}-t ${id}-d`}>
             <title id={`${id}-t`}>{title}</title>

@@ -39,3 +39,14 @@ table { border-collapse: collapse; width: 100%; }
 th, td { border-bottom: 1px solid var(--rule); padding: var(--s2) var(--s3) var(--s2) 0; text-align: left; vertical-align: top; }
 thead th { font: 400 1rem var(--mono); text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-2); }
 tbody th { font-weight: 700; }
+
+/* DESIGN_PASS_2 step 5: printed footage strips, plates and pull quotes */
+.strip-plate { position: relative; height: 30vh; min-height: 180px; max-height: 360px; margin: var(--section) calc(50% - 50vw) calc(var(--s7) + 3em); }
+.notes-page > .strip-plate:first-child { margin-top: var(--s6); }
+.strip-plate .bd { -webkit-mask-image: linear-gradient(to bottom, transparent, #000 14%, #000 86%, transparent); mask-image: linear-gradient(to bottom, transparent, #000 14%, #000 86%, transparent); }
+.strip-plate .plate-cap { padding: var(--s2) var(--gutter) 0; max-width: none; }
+.fig-panel::before, .fig-panel::after { content: ""; position: absolute; width: 16px; height: 16px; border: 0 solid var(--ink-2); pointer-events: none; }
+.fig-panel::before { top: -9px; left: -9px; border-top-width: 1px; border-left-width: 1px; }
+.fig-panel::after { bottom: -9px; right: -9px; border-bottom-width: 1px; border-right-width: 1px; }
+.pull { font: 400 italic clamp(1.75rem, 3.2vw, 2.6rem)/1.15 var(--display); color: var(--ink-accent); margin: 0 0 var(--s3) !important; padding-left: var(--s4); border-left: 3px solid var(--ink-accent); max-width: 30ch !important; }
+@media (max-width: 400px) { .strip-plate { margin-bottom: calc(var(--s7) + 5em); } }

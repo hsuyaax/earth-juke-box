@@ -7,6 +7,7 @@ import "@fontsource/instrument-serif/400.css";
 import "@fontsource/instrument-serif/400-italic.css";
 import "../tokens.css";
 import "../sleeve/sleeve.css"; // shared paper surface: header, display type, vinyl footer
+import "../backdrop.css";
 
 // Boot for the two reading pages (sleeve and liner notes): line reveals and smooth scroll, never under reduced motion.
 export function boot(App) {

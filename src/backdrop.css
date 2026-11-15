@@ -1,0 +1,67 @@
+/* Moving NASA backdrops and printed plates (DESIGN_PASS_2 section 3). */
+/* The small scale (1.04 to 1) is on the video, inside the clipped box, so a backdrop never widens the page. */
+.bd { position: relative; overflow: hidden; opacity: 0; transition: opacity 600ms var(--ease-out); }
+.bd video { display: block; width: 100%; height: 100%; object-fit: cover; transform: scale(1.04); transition: transform 900ms var(--ease-out); }
+.bd.bd-in { opacity: 0.55; } /* arrives with its section */
+.bd.bd-in video { transform: none; }
+.bd.bd-in.bd-active { opacity: 1; } /* only the playing one at full strength */
+.bd.bd-swap { opacity: 0 !important; transition-duration: 300ms; } /* crossfade when the clip changes */
+.bd-fill { position: absolute; inset: 0; }
+
+/* Printed on paper: ink where the frame is dark, paper where it is light. Grayscale video screened over the ink,
+   then the whole plate multiplied into the paper. */
+.bd-print { background: var(--ink, var(--ink-accent)); mix-blend-mode: multiply; }
+.bd-print video { filter: grayscale(1) contrast(1.2) brightness(1.15); mix-blend-mode: screen; }
+
+/* Light on dark: full color, dimmed so text near it keeps AA against the brightest frame (see the commit for the numbers). */
+.bd-light video { opacity: var(--dim, 0.16); }
+
+/* Plates: framed footage with crop marks and a plate number. Bleeds off one edge and fades into the page there. */
+.plate { position: relative; margin: 0 0 var(--s7); min-height: clamp(220px, 34vw, 460px); }
+.plate .bd { -webkit-mask-composite: source-in; mask-composite: intersect; }
+.plate-right { margin-right: calc(50% - 50vw); margin-left: 12%; }
+.plate-right .bd { -webkit-mask-image: linear-gradient(to right, transparent, #000 16%), linear-gradient(to bottom, transparent, #000 10%, #000 90%, transparent);
+  mask-image: linear-gradient(to right, transparent, #000 16%), linear-gradient(to bottom, transparent, #000 10%, #000 90%, transparent); }
+.plate-left { margin-left: calc(50% - 50vw); margin-right: 18%; }
+.plate-left .bd { -webkit-mask-image: linear-gradient(to left, transparent, #000 16%), linear-gradient(to bottom, transparent, #000 10%, #000 90%, transparent);
+  mask-image: linear-gradient(to left, transparent, #000 16%), linear-gradient(to bottom, transparent, #000 10%, #000 90%, transparent); }
+.plate::before, .plate::after { content: ""; position: absolute; width: 18px; height: 18px; border: 0 solid var(--ink); z-index: 1; pointer-events: none; } /* crop marks */
+.plate-right::before { top: -10px; left: -10px; border-top-width: 1px; border-left-width: 1px; }
+.plate-right::after { bottom: -10px; left: -10px; border-bottom-width: 1px; border-left-width: 1px; }
+.plate-left::before { top: -10px; right: -10px; border-top-width: 1px; border-right-width: 1px; }
+.plate-left::after { bottom: -10px; right: -10px; border-bottom-width: 1px; border-right-width: 1px; }
+.plate-cap { position: absolute; left: 0; top: 100%; padding-top: var(--s2); color: var(--ink-2); font-size: 1.125rem; max-width: 60ch; }
+.plate-left .plate-cap { left: auto; right: 0; text-align: right; }
+.plate-left .plate-cap { padding-right: var(--gutter); }
+.plate-cap .mono { margin-right: var(--s2); color: var(--ink); }
+.plate + .cols, .plate + .cols.touch { margin-top: var(--s9); }
+
+/* Dark bands: the backdrop sits behind the content, fading out at the band's top and bottom edges. */
+.hear, .closing { position: relative; isolation: isolate; }
+.hear > :not(.bd), .closing > :not(.bd) { position: relative; z-index: 1; }
+.bd-hear, .bd-footer { z-index: 0;
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 18%, #000 82%, transparent); mask-image: linear-gradient(to bottom, transparent, #000 18%, #000 82%, transparent); }
+.bd-footer { --dim: 0.14; }
+
+/* Pause motion, in the header */
+.motion-toggle { font: inherit; font-size: 1rem; color: var(--ink); background: transparent; border: 2px solid var(--rule); border-radius: 2px; min-height: 48px; padding: 0 var(--s3); cursor: pointer; }
+.motion-toggle[aria-pressed="true"] { border-color: var(--ink); background: var(--paper-2); }
+.motion-toggle[aria-pressed="true"]::before { content: "\25A0  "; } /* a stop square shows the paused state */
+
+@media (max-width: 720px) {
+  .plate-right { margin-left: 0; }
+  .plate-left { margin-right: 0; }
+  /* captions stay below the plate (never on the footage); leave room for three lines of caption */
+  .plate { margin-bottom: calc(var(--s5) + 5.2em); }
+  .plate-left .plate-cap { padding-right: 0; padding-left: var(--gutter); }
+  .plate-right .plate-cap { padding-right: var(--gutter); }
+  .plate + .cols, .plate + .cols.touch { margin-top: 0; }
+}
+@media (max-width: 400px) { .plate { margin-bottom: calc(var(--s5) + 7em); } } /* captions wrap to four lines on the narrowest phones */
+@media (prefers-reduced-motion: reduce) {
+  .bd, .bd video { transform: none; transition: none; }
+}
+
+/* Labels over the dimmed footage use the lighter grey: worst case (a white frame pixel under the label) 5.9:1 in the
+   records band and 6.4:1 in the footer; the darker label grey would drop to 4.1:1 there. */
+.hear .eyebrow, .closing .eyebrow, .hear .eyebrow.side { color: var(--text-2); }

@@ -3,6 +3,9 @@ import { createHero } from "./hero.js";
 import { coverHTML, COVER_ALT } from "../covers.js";
 import "../cover.css";
 import { Line, Header, Closing } from "../shared/Chrome.jsx";
+import { Backdrop } from "../shared/Backdrop.jsx";
+import { setHeroSound } from "../backdrops.js";
+import { INK } from "../covers.js";
 
 
 function Hero() {
@@ -15,7 +18,7 @@ function Hero() {
     ctl.current = createHero({
       video: videoRef.current, stage: stageRef.current,
       onStats: setStats, onPreview: setPreview, onVisible: (v) => setOffscreen(!v),
-      onPlaying: (p) => { setPlaying(p); if (p) setPlayed(true); }, onError: setErr,
+      onPlaying: (p) => { setPlaying(p); setHeroSound(p); if (p) setPlayed(true); }, onError: setErr, // backdrops rest while the hero plays
     });
     return () => ctl.current.destroy();
   }, []);
@@ -94,6 +97,10 @@ function Problem() {
           <Line className="indent">Pictures leave people <em>out</em>.</Line>
         </h2>
       </div>
+      <figure className="plate plate-right">
+        <Backdrop name="co2" mode="print" ink="var(--ink-accent)" className="bd-fill" />
+        <figcaption className="plate-cap"><span className="mono">Plate 01</span> Carbon dioxide over North America, from NASA's DYAMOND model run (SVS 5196), printed in one ink.</figcaption>
+      </figure>
       <div className="cols">
         <p>NASA's Earth Information Center shows lightning, city lights, ocean currents, smoke, and dust as beautiful moving images. People who are blind or have low vision get, at best, a sentence describing them.</p>
         <p>The challenge asked for a jukebox that pairs those frames with sound made in real time. So every sound here is read from the picture, then placed on the map: left and right for where, pitch for how high, instrument for what.</p>
@@ -122,8 +129,10 @@ const LANGUAGE = [
 ];
 
 function HearIt() {
+  const [lit, setLit] = useState(RECORDS[0].id);
   return (
-    <section className="band vinyl" aria-labelledby="hear-h">
+    <section className="band vinyl hear" aria-labelledby="hear-h">
+      <Backdrop name={lit} mode="light" className="bd-fill bd-hear" />
       <div className="statement">
         <p className="eyebrow side"><span>02</span> — Hear it</p>
         <h2 id="hear-h" className="display-l">
@@ -132,7 +141,7 @@ function HearIt() {
       </div>
       <ul className="sleeves">
         {RECORDS.map((r) => (
-          <li key={r.id} className="sleeve-card">
+          <li key={r.id} className="sleeve-card" onMouseEnter={() => setLit(r.id)} onFocus={() => setLit(r.id)}>
             <div className="cover-wrap" dangerouslySetInnerHTML={{ __html: coverHTML(r.id, { size: "l", num: r.key, title: r.title, alt: COVER_ALT[r.id] }) }} />
             <p className="eyebrow">Record {r.key}</p>
             <h3>{r.title}</h3>
@@ -179,6 +188,10 @@ function TouchIt() {
         <p className="eyebrow side"><span>03</span> — Touch it</p>
         <h2 id="touch-h" className="display-l"><Line>Now put your</Line><Line className="indent"><em>finger</em> on it.</Line></h2>
       </div>
+      <figure className="plate plate-left">
+        <Backdrop name="currents" mode="print" ink={INK.currents} rate={0.6} className="bd-fill" />
+        <figcaption className="plate-cap"><span className="mono">Plate 02</span> Sea surface currents (SVS 3912), slowed down and printed in the currents record's ink.</figcaption>
+      </figure>
       <div className="cols touch">
         <figure>
           <ProbeFigure />

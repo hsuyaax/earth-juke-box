@@ -141,10 +141,36 @@ const PATTERNS = {
 export const INK = COLOR;
 const FILLED = new Set(["nightlights", "airquality", "gedi", "atmosriver"]); // patterns drawn with fills, the rest with strokes
 
+// Covers made from NASA frames (DESIGN_PASS_2 section 2): one still per record, exported with ffmpeg from its own clip
+// (public/covers/<id>.jpg, square, 600 px), shown as a duotone in the record's ink. Earth Today has no clip: pattern only.
+const SVS = { lightning: 5011, nightlights: 5313, currents: 3912, aerosols: 5552, co2: 5196, airquality: 5533, perpetualocean: 5425, atmosriver: 4960, gedi: 4950 };
+export const COVER_ALT = {
+  lightning: "Lightning seen from space: yellow dots of lightning over the Americas and Africa on a dark world map.",
+  nightlights: "The night lights change map, with close-ups of Western Europe and the Eastern Mediterranean: violet where light grew, orange where it faded.",
+  currents: "Ocean currents drawn as streaks: warm red and yellow water along the equator, cold green and blue water toward the poles.",
+  aerosols: "Aerosols swirling over the Atlantic: a lavender band of dust, red smoke over Africa, teal sea salt over the oceans.",
+  co2: "Carbon dioxide over North America on a globe: orange plumes rising over a pale background of CO2.",
+  airquality: "Air-quality model strips side by side: bands of purple, orange and green, one per pollutant.",
+  perpetualocean: "Swirling surface currents off North America, colored by temperature, with the Gulf Stream curling in orange.",
+  atmosriver: "An atmospheric river: a band of water vapor flowing across the Pacific toward North America's west coast.",
+  gedi: "A globe colored by forest height: shades of green over the Americas, blue ocean around them.",
+};
+const LAYOUTS = ["cv-bl", "cv-tr", "cv-br"]; // asymmetric plate positions on one shared grid, different per record
+// size "s": the frame only (the title sits next to it). size "l": frame plus a plate with number, title and SVS caption.
+// The plate is decorative (aria-hidden): the page around the cover carries the title. Text sits on a solid panel, never on the image.
+export function coverHTML(id, { size = "s", num = 0, title = "", alt = "" } = {}) {
+  const ink = COLOR[id] || COLOR.today;
+  const art = SVS[id]
+    ? `<span class="cv-art"><img src="covers/${id}.jpg" alt="${alt}" width="600" height="600" loading="lazy" decoding="async"></span>`
+    : `<span class="cv-art cv-pattern">${coverSVG(id, 200)}</span>`;
+  if (size === "s") return `<span class="cv cv-s" style="--ink: ${ink}">${art}</span>`;
+  return `<span class="cv cv-l ${LAYOUTS[(num - 1) % 3]}" style="--ink: ${ink}">${art}<span class="cv-plate" aria-hidden="true"><span class="cv-num">${String(num).padStart(2, "0")}</span><span class="cv-title">${title}</span><span class="cv-cap">${SVS[id] ? "SVS " + SVS[id] : "NASA GIBS"}</span></span></span>`;
+}
+
 export function coverSVG(id, size = 200) {
   const draw = PATTERNS[id] || PATTERNS.today;
   const c = COLOR[id] || COLOR.today;
   const paint = FILLED.has(id) ? `fill="${c}" stroke="${c}"` : `fill="none" stroke="${c}"`;
-  return `<svg class="cover" viewBox="0 0 200 200" width="${size}" height="${size}" aria-hidden="true" focusable="false">` +
+  return `<svg class="cover-pattern" viewBox="0 0 200 200" width="${size}" height="${size}" aria-hidden="true" focusable="false">` +
     `<rect width="200" height="200" fill="${BG}"/><g ${paint}>${draw(rng(id))}</g></svg>`;
 }

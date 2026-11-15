@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createHero } from "./hero.js";
-import { coverSVG } from "../covers.js";
+import { coverHTML, COVER_ALT } from "../covers.js";
+import "../cover.css";
 import { Line, Header, Closing } from "../shared/Chrome.jsx";
 
 
@@ -132,7 +133,7 @@ function HearIt() {
       <ul className="sleeves">
         {RECORDS.map((r) => (
           <li key={r.id} className="sleeve-card">
-            <div className="cover-wrap" dangerouslySetInnerHTML={{ __html: coverSVG(r.id) }} />
+            <div className="cover-wrap" dangerouslySetInnerHTML={{ __html: coverHTML(r.id, { size: "l", num: r.key, title: r.title, alt: COVER_ALT[r.id] }) }} />
             <p className="eyebrow">Record {r.key}</p>
             <h3>{r.title}</h3>
             <p>{r.line}</p>

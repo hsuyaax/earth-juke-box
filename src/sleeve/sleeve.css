@@ -89,7 +89,8 @@ input[type="range"] { accent-color: var(--ink-accent); min-height: 48px; }
 .sleeve-card p { margin: 0; }
 .sleeve-card .eyebrow { margin: var(--s3) 0 0; }
 .cover-wrap { border: 1px solid var(--line); }
-.cover-wrap svg { width: 100%; height: auto; }
+.cover-wrap .cv { transition: transform 300ms var(--ease-out); }
+.sleeve-card:hover .cover-wrap .cv, .sleeve-card:focus-within .cover-wrap .cv { transform: translateY(-6px); } /* the cover lifts on hover or focus */
 .stretch::after { content: ""; position: absolute; inset: 0; }
 .language { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s2); }
 .language em { font-style: italic; }

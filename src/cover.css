@@ -1,0 +1,18 @@
+/* Covers from NASA frames (DESIGN_PASS_2 section 2). The frame is grayscale; multiplied over the record's ink it becomes
+   an ink-on-black duotone, the same on every page. */
+.cv { position: relative; display: block; overflow: hidden; background: #081229; }
+.cv-art { position: relative; display: block; background: var(--ink); line-height: 0; isolation: isolate; }
+/* NASA frames are mostly dark, so the exposure is lifted before the ink is applied; the darkest tones are then lifted to
+   the page's night blue (lighten), giving two inks: night blue for shadow, the record's color for light. */
+.cv-art img { display: block; width: 100%; height: auto; aspect-ratio: 1; object-fit: cover; filter: grayscale(1) brightness(1.9) contrast(1.35); mix-blend-mode: multiply; }
+.cv-art::after { content: ""; position: absolute; inset: 0; background: #0d1b3d; mix-blend-mode: lighten; pointer-events: none; }
+.cv-art.cv-pattern { background: #081229; }
+.cv-art.cv-pattern svg { display: block; width: 100%; height: auto; }
+.cv-plate { position: absolute; display: grid; gap: 2px; padding: 10px 14px 12px; background: #081229; color: #f4efe6; max-width: 78%; }
+.cv-num { font: 400 2.6rem/0.9 var(--display); color: var(--ink); }
+.cv-title { font: 400 1.35rem/1.05 var(--display); }
+.cv-cap { font: 400 1rem/1.2 var(--mono); text-transform: uppercase; letter-spacing: 0.05em; color: #9aa3bd; }
+.cv-bl .cv-plate { left: 0; bottom: 0; }
+.cv-tr .cv-plate { right: 0; top: 0; text-align: right; }
+.cv-br .cv-plate { right: 0; bottom: 0; text-align: right; }
+.cv-l::after { content: ""; position: absolute; inset: 0; box-shadow: inset 0 0 0 1px rgba(244, 239, 230, 0.12); pointer-events: none; }

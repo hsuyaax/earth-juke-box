@@ -1,4 +1,4 @@
-// Earth Band members (EARTH_BAND_GUIDE.md section 2). Phases 1-2: drum kit, bass, lead, harmony pad, shaker, arpeggio, marimba.
+// Earth Band members (EARTH_BAND_GUIDE.md section 2): all nine visualizations NASA listed for the challenge.
 // Engine settings come from the record data files unchanged, except the clip (small band clips) and one measured
 // flash threshold for the smaller lightning clip. No Tone and no DOM here, so the tests can import it.
 import lightningData from "../records/lightning.data.js";
@@ -25,6 +25,9 @@ export const NORM = {
   // GEDI's strongest color is green in every frame, so "strongest color" is its strength: the largest
   // saturation-weighted hue-histogram bin (greener canopy, higher). GEDI band clip.
   forestColor: [0.0494, 0.1102],
+  riverDensity: [0.1594, 0.4734], // Atmospheric River band clip, smoothed mean brightness (moisture)
+  riverHue: [105.8, 263.0], // Atmospheric River band clip, average hue angle in degrees (green in 86% of frames, so the angle, not the top bin)
+  pollution: [0.3653, 0.442], // Air Quality band clip, saturation-weighted color amount (its hue is the same in every frame)
 };
 export const norm = (v, [lo, hi]) => Math.min(1, Math.max(0, (v - lo) / (hi - lo)));
 
@@ -72,4 +75,23 @@ export const MEMBERS = [
     rec: bsideRec("gedi", "clips/band/gedi.mp4"), aspect: "16 / 9", years: "",
     describe: "Off-beat eighths only, so it never collides with the lead. Greener canopy plays higher; a brighter picture plays louder. Artistic, not geographic.",
   },
+  {
+    id: "strings", role: "Strings", name: "Atmospheric river", svs: 4960, color: "#86AAA8", positional: false,
+    // Band clip 384 px: brightness and color amount within 1%, motion within 6% of the full clip (stronger compression lost 12% of the motion).
+    rec: bsideRec("atmosriver", "clips/band/atmosriver.mp4"), aspect: "16 / 9", years: "",
+    describe: "One long note per bar, gliding on the bar line. More moisture swells it; the picture's color picks which chord tone is on top. Artistic, not geographic.",
+  },
+  {
+    id: "drone", role: "Drone", name: "Air quality", svs: 5533, color: "#E6E1A3", positional: false,
+    // Band clip 480 px: brightness, color amount and motion within 10% of the full clip (384 px read the motion 15% high).
+    rec: bsideRec("airquality", "clips/band/airquality.mp4"), aspect: "16 / 9", years: "",
+    describe: "A and E held all the time, so the key stays anchored. More pollution color opens the filter and speeds the tremolo. Artistic, not geographic.",
+  },
+];
+
+// Quick starts (guide section 5). Each is four members, inside the cap.
+export const SCENES = [
+  { id: "storm", name: "Storm", members: ["drums", "bass", "shaker", "strings"] },
+  { id: "city", name: "City night", members: ["lead", "pad", "bass", "drone"] },
+  { id: "ocean", name: "Ocean", members: ["bass", "arp", "marimba", "pad"] },
 ];

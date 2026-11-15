@@ -105,3 +105,10 @@ footer strong { color: var(--text); }
 .strip[hidden] { display: none; }
 @media (max-width: 480px) { .pads.grid .pad { min-height: 88px; padding: var(--s2); } }
 @media (prefers-reduced-motion: reduce) { .pads.grid .pad[aria-pressed="true"] { box-shadow: none; } }
+
+/* phase 3: scene buttons */
+.scenes-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2) var(--s4); margin: 0 0 var(--s4); }
+.scenes-row .role { margin: 0; }
+.scenes { display: flex; flex-wrap: wrap; gap: var(--s3); }
+.scenes button { display: grid; text-align: left; gap: 2px; font-weight: 700; }
+.scene-who { font: 400 1rem var(--body); color: var(--text-2); }

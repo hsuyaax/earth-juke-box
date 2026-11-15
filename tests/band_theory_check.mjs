@@ -25,6 +25,7 @@ function frames() {
     drums: { flashes: Array.from({ length: 6 }, () => ({ x: 0, y: 0, power: 0 })), nFlashes: 0, flashRate: 0, ready: true },
     bass, lead, pad: { meanS: 0, bx: 0.5, by: 0.5, ready: true },
     shaker: mk(96, 48, 4), arp: { meanS: 0, motionS: 0, bx: 0.5, by: 0.5, ready: true }, marimba: { meanS: 0, hueHistS: new Float32Array(12), bx: 0.5, by: 0.5, ready: true },
+    strings: { meanS: 0, hueHistS: new Float32Array(12), bx: 0.5, by: 0.5, ready: true }, drone: { meanS: 0.8, hueHistS: new Float32Array(12), bx: 0.5, by: 0.5, ready: true },
     tick() { // new random features for the next 16th
       const d = this.drums; d.nFlashes = Math.floor(rnd() * 4); d.flashRate = rnd() * 18;
       for (let k = 0; k < d.nFlashes; k++) Object.assign(d.flashes[k], { x: rnd(), y: rnd(), power: rnd() });
@@ -37,6 +38,8 @@ function frames() {
       sh.classFracS[1] = 0.03 + 0.02 * rnd(); sh.classFracS[2] = 0.014 + 0.02 * rnd(); sh.classFracS[3] = 0.016 + 0.02 * rnd();
       this.arp.meanS = 0.14 + 0.27 * rnd(); this.arp.motionS = 0.001 + 0.015 * rnd();
       this.marimba.meanS = 0.13 + 0.06 * rnd(); this.marimba.hueHistS.fill(0); this.marimba.hueHistS[6] = 0.045 + 0.07 * rnd();
+      this.strings.meanS = 0.16 + 0.32 * rnd(); this.strings.hueHistS.fill(0); this.strings.hueHistS[3 + Math.floor(rnd() * 6)] = 0.1 + 0.2 * rnd();
+      this.drone.hueHistS.fill(0); this.drone.hueHistS[1] = 0.36 + 0.09 * rnd();
     },
   };
 }
@@ -44,13 +47,13 @@ function run(onSet, steps = 16 * 32) {
   seed = 7; const f = frames(), score = createScore(), out = [];
   for (let n = 0; n < steps; n++) {
     f.tick();
-    const ids = ["drums", "bass", "lead", "pad", "shaker", "arp", "marimba"];
+    const ids = ["drums", "bass", "lead", "pad", "shaker", "arp", "marimba", "strings", "drone"];
     const r = score.step(n, Object.fromEntries(ids.map((id) => [id, { on: !!onSet[id], full: true, s: f[id] }])));
     out.push(r);
   }
   return out;
 }
-const ALL = { drums: true, bass: true, lead: true, pad: true, shaker: true, arp: true, marimba: true };
+const ALL = { drums: true, bass: true, lead: true, pad: true, shaker: true, arp: true, marimba: true, strings: true, drone: true };
 const steps = run(ALL);
 const events = steps.flatMap((r) => r.events.map((e) => ({ ...e, chord: r.chord, slot: r.slot, bar: r.bar })));
 
@@ -121,8 +124,19 @@ ok(arp.every((e) => CH[e.chord].includes(pc(e.midi)) && e.midi >= 76 && e.midi <
 const shaker = events.filter((e) => e.member === "shaker");
 ok(shaker.length > 50 && shaker.every((e) => ["dust", "salt", "smoke"].includes(e.voice) && PENT.includes(pc(e.midi))), "shaker noise centers on pentatonic notes");
 ok(shaker.filter((e) => e.voice === "salt").every((e) => e.slot % 4 === 2), "sea salt on off-beats");
+// Strings: one note per bar, on the bar line, a tone of the current chord, in range.
+const strings = events.filter((e) => e.voice === "strings");
+ok(strings.length >= 30 && strings.every((e) => e.slot === 0 && CH[e.chord].includes(pc(e.midi)) && e.midi >= 52 && e.midi <= 69), "strings: chord tone on each bar line, in range");
+// Each strings note is the in-range copy of its pitch class nearest the previous note (the range 52-69 holds one D
+// only, so a jump can be up to 10 semitones, but never more than the range forces).
+ok(strings.every((e, i) => i === 0 || [e.midi - 12, e.midi + 12].every((alt) => alt < 52 || alt > 69 || Math.abs(alt - strings[i - 1].midi) >= Math.abs(e.midi - strings[i - 1].midi))), "strings take the nearest note the range allows");
+// Drone: only A2 and E3, ever.
+const drone = events.filter((e) => e.member === "drone" && e.midis);
+ok(drone.length > 0 && drone.every((e) => e.midis.join() === "45,52"), "drone is A2 and E3 only");
+// Voice cap: never more than 12 new notes in one 16th.
+ok(steps.every((r) => r.events.filter((e) => e.midi !== undefined || (e.midis && e.voice !== "droneSet")).length <= 12), "at most 12 new notes per 16th");
 // Every pitched note of every member is in A natural minor.
-ok(events.filter((e) => e.midi !== undefined).every((e) => KEY.includes(pc(e.midi))), "every pitched note in A natural minor");
+ok(events.filter((e) => e.midi !== undefined).every((e) => KEY.includes(pc(e.midi))) && events.filter((e) => e.midis).every((e) => e.midis.every((m) => KEY.includes(pc(m)))), "every pitched note in A natural minor");
 
 if (fails) { console.error(`band theory: ${fails} failed`); process.exit(1); }
-console.log(`band theory ok (${leads.length} lead, ${drums.length} drum, ${padEvents.length} pad, ${marimba.length} marimba, ${arp.length} arpeggio, ${shaker.length} shaker events; worst pad move ${worst.toFixed(1)} semitones per note)`);
+console.log(`band theory ok (${leads.length} lead, ${drums.length} drum, ${padEvents.length} pad, ${marimba.length} marimba, ${arp.length} arpeggio, ${shaker.length} shaker, ${strings.length} strings events; worst pad move ${worst.toFixed(1)} semitones per note)`);

@@ -1,4 +1,4 @@
-// Earth Band page (EARTH_BAND_GUIDE.md, phases 1-2): seven members on one 16th-note grid.
+// Earth Band page (EARTH_BAND_GUIDE.md, phases 1-3): nine members on one 16th-note grid, three scenes.
 // One transport, one master chain (src/audio.js, with its limiter), one gain per member, one shared reverb send.
 // The score (score.js) decides every note from the frames; this file only turns its events into sound and pictures.
 // A member's video loads the first time it is switched on, and plays only while it is on.
@@ -10,7 +10,7 @@ import "@fontsource/instrument-serif/400.css";
 import "../tokens.css";
 import "./band.css";
 import { logoSVG } from "../logo.js";
-import { MEMBERS, BPM } from "./members.js";
+import { MEMBERS, SCENES, BPM } from "./members.js";
 import { createScore } from "./score.js";
 import { CHORDS } from "./theory.js";
 import { createBandAnalyzer } from "./analyzer.js";
@@ -76,7 +76,8 @@ async function loadAudio() {
     if (send) m.out.connect(new Tone.Gain(send).connect(reverb));
     return m.out;
   };
-  const hp = (dest) => new Tone.Filter(150, "highpass").connect(dest); // everything except bass and kick is high-passed at 150 Hz
+  const hp = (dest, hz = 150) => new Tone.Filter(hz, "highpass").connect(dest); // everything except bass and kick is high-passed at 150 Hz
+  // (pad and drone at 100 Hz instead: their lowest note is A2, 110 Hz, which a 150 Hz high-pass would thin out)
 
   // Drum kit (guide 3.8, levels 3.10): kick tuned to A1 and centered; snare and hat pan from the flash.
   const dOut = chain(byId.drums, 0.06);
@@ -98,7 +99,7 @@ async function loadAudio() {
     envelope: { attack: 0.005, decay: 0.3, sustain: 0.25, release: 0.4 }, volume: -10 }).connect(pan) }; });
   let leadN = 0;
   // Pad (3.9): slow triangle PolySynth through a lowpass that density opens; centered.
-  const padFilter = new Tone.Filter(2400, "lowpass").connect(hp(chain(byId.pad, 0.3)));
+  const padFilter = new Tone.Filter(2400, "lowpass").connect(hp(chain(byId.pad, 0.3), 100));
   const pad = new Tone.PolySynth(Tone.Synth, { maxPolyphony: 8, oscillator: { type: "triangle" },
     envelope: { attack: 0.8, decay: 0.4, sustain: 0.8, release: 1.6 }, volume: -16 }).connect(padFilter);
   // Shaker and atmosphere (3.9): the existing dust, sea-salt and smoke noise voices (src/audio.js), brought to the guide's levels.
@@ -113,6 +114,18 @@ async function loadAudio() {
   const mPan = new Tone.Panner(0.3).connect(hp(chain(byId.marimba, 0.15)));
   const marimba = new Tone.Synth({ oscillator: { type: "sine" }, envelope: { attack: 0.001, decay: 0.35, sustain: 0, release: 0.1 }, volume: -14 }).connect(mPan);
   const click = new Tone.FMSynth({ harmonicity: 4, modulationIndex: 8, envelope: { attack: 0.001, decay: 0.02, sustain: 0, release: 0.01 }, volume: -32 }).connect(mPan);
+
+  // Strings (3.9): one saw voice with a slow attack and a glide between bar lines, through a lowpass and a chorus; pan -0.3.
+  const strings = new Tone.MonoSynth({ oscillator: { type: "sawtooth" }, portamento: 0.3, filter: { type: "lowpass", Q: 0.5 },
+    filterEnvelope: { attack: 0.6, decay: 0.5, sustain: 0.7, baseFrequency: 500, octaves: 1.6 },
+    envelope: { attack: 0.6, decay: 0.3, sustain: 0.8, release: 1.2 }, volume: -16 })
+    .connect(new Tone.Chorus(1.5, 3, 0.4).start().connect(new Tone.Panner(-0.3).connect(hp(chain(byId.strings, 0.25)))));
+  // Drone (3.9): A2 and E3 held, through a lowpass and a tremolo, faded in and out; never changes pitch.
+  const droneGain = new Tone.Gain(0).connect(hp(chain(byId.drone, 0.15), 100));
+  const tremolo = new Tone.Tremolo(1, 0.5).start().connect(droneGain);
+  const droneFilter = new Tone.Filter(400, "lowpass").connect(tremolo);
+  const droneOscs = [hz(45), hz(52)].map((f) => new Tone.Oscillator({ frequency: f, type: "triangle", volume: -20 }).connect(droneFilter));
+  let droneStarted = false;
 
   const SIXTEENTH = 60 / BPM / 4;
   const play = (e, time) => {
@@ -135,11 +148,15 @@ async function loadAudio() {
       case "dust": case "salt": case "smoke": { const v = sh[e.voice]; v.pan.pan.setValueAtTime(e.pan, t); v.synth.triggerAttackRelease(hz(e.midi), e.dur, t, e.vel); break; }
       case "arp": arps[e.pan < 0 ? 0 : 1].triggerAttackRelease(hz(e.midi), e.dur, t, e.vel); break;
       case "marimba": marimba.triggerAttackRelease(hz(e.midi), e.dur, t, e.vel); click.triggerAttackRelease(hz(e.midi + 24), "64n", t, e.vel); break;
+      case "strings": strings.triggerAttackRelease(hz(e.midi), "1m", t, e.vel); break;
+      case "drone": if (!droneStarted) { droneOscs.forEach((o) => o.start(t)); droneStarted = true; } droneGain.gain.rampTo(e.vel, 2, t); // fall through to set
+      case "droneSet": droneFilter.frequency.rampTo(e.cutoff, 2, t); tremolo.frequency.rampTo(e.rate, 2, t); if (e.voice === "droneSet") droneGain.gain.rampTo(e.vel, 2, t); break;
+      case "droneOff": droneGain.gain.rampTo(0, 1.5, t); break;
     }
-    if (e.voice !== "padOff" && e.voice !== "playhead") m.notes++;
+    if (!["padOff", "playhead", "droneSet", "droneOff"].includes(e.voice)) m.notes++;
     Tone.getDraw().schedule(() => {
       if (e.playhead !== undefined) m.layer.playhead(e.playhead);
-      if (e.x !== undefined && e.voice !== "playhead") { m.layer.ripple(e.x, e.y, e.vel); pulse(m); }
+      if (e.x !== undefined && e.voice !== "playhead") { m.layer.ripple(e.x, e.y, e.vel); pulse(m); } // a drone's bar update ripples too: it is still sounding
     }, t);
   };
 
@@ -151,7 +168,7 @@ async function loadAudio() {
     for (const e of r.events) play(e, time);
     if (r.slot % 4 === 0) Tone.getDraw().schedule(() => { M.forEach((m) => { m.activity = m.on ? r.activity[m.id] : 0; }); glow(); if (r.slot === 0) showChord(r); }, time);
   }, "16n");
-  A = { Tone, audio, transport, release: () => { pad.releaseAll(); } };
+  A = { Tone, audio, transport, release: () => { pad.releaseAll(); strings.triggerRelease(); droneGain.gain.rampTo(0, 0.3); } };
   return A;
 }
 
@@ -265,6 +282,16 @@ padsEl.addEventListener("keydown", (e) => {
 });
 padsEl.addEventListener("keyup", (e) => {
   if ((e.key === " " || e.key === "Enter") && hold) { e.preventDefault(); endPointer(false); }
+});
+
+// Scenes: switch to exactly these four members (others off first, so the cap is never hit).
+$("scenes").innerHTML = SCENES.map((sc) => `<button type="button" data-scene="${sc.id}">${sc.name}<span class="scene-who">${sc.members.map((id) => byId[id].role).join(", ")}</span></button>`).join("");
+$("scenes").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-scene]"); if (!b) return;
+  const sc = SCENES.find((x) => x.id === b.dataset.scene);
+  M.forEach((m) => { m.solo = false; if (m.on && !sc.members.includes(m.id)) { m.on = false; m.video.pause(); } });
+  sc.members.forEach((id) => { const m = byId[id]; if (!m.on) { m.on = true; ensureMedia(m); if (playing) m.video.play().catch(() => {}); } });
+  render(); announce(`${sc.name}: ${sc.members.map((id) => byId[id].role).join(", ")}.`);
 });
 
 sparseBtn.addEventListener("click", () => { target.full = !target.full; render(); announce(`${target.role} ${target.full ? "full" : "sparse"}.`); });

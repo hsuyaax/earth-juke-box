@@ -7,6 +7,11 @@ import { NORM, norm } from "./members.js";
 // The aerosol noise voices are pitched noise (src/audio.js: the bandpass follows the note), so their centers are notes too:
 // height on the map picks a pentatonic note in each voice's own band. Dust around 2-3 kHz, salt higher, smoke low.
 const DUST_RANGE = [86, 98], SALT_RANGE = [98, 110], SMOKE_RANGE = [45, 57];
+const STRINGS_RANGE = [52, 69], DRONE = [45, 52]; // drone: A2 and E3 only
+const VOICE_CAP = 12; // new notes per 16th at most (about 24 sounding voices overall); the quietest are dropped
+// Average hue angle of a frame (circular mean of the saturation-weighted hue histogram), in degrees.
+export const hueAngle = (h) => { let x = 0, y = 0; for (let i = 0; i < 12; i++) { const a = ((i + 0.5) * Math.PI) / 6; x += h[i] * Math.cos(a); y += h[i] * Math.sin(a); } return ((Math.atan2(y, x) * 180) / Math.PI + 360) % 360; };
+const colorAmount = (s) => s.hueHistS.reduce((a, b) => a + b, 0);
 const LEAD_RANGE = [60, 76], PAD_RANGE = [45, 64], MARIMBA_RANGE = [57, 69], ARP_RANGE = [76, 88];
 const strongestColor = (s) => Math.max(...s.hueHistS);
 
@@ -20,11 +25,13 @@ export function activityOf(id, s) {
   if (id === "shaker") return (norm(s.classFracS[1], NORM.dust) + norm(s.classFracS[2], NORM.smoke) + norm(s.classFracS[3], NORM.salt)) / 3;
   if (id === "arp") return norm(s.motionS, NORM.oceanMotion);
   if (id === "marimba") return norm(s.meanS, NORM.forestBright);
+  if (id === "strings") return norm(s.meanS, NORM.riverDensity);
+  if (id === "drone") return norm(colorAmount(s), NORM.pollution);
   return 0;
 }
 
 export function createScore() {
-  const mem = { T: 0, numeral: "i", next: "i", lead: null, voicing: null, padOn: false, arpI: 0, arpChord: null, marimba: null };
+  const mem = { T: 0, numeral: "i", next: "i", lead: null, voicing: null, padOn: false, arpI: 0, arpChord: null, marimba: null, strings: null, droneOn: false };
 
   // n = 16th-note count since Play. members = { id: { on, full, s } }, s = that member's engine state.
   function step(n, members) {
@@ -141,6 +148,36 @@ export function createScore() {
       const midi = melodyNote(t, MARIMBA_RANGE, chord, false, mem.marimba);
       mem.marimba = midi;
       events.push({ member: "marimba", voice: "marimba", midi, vel: 0.3 + 0.5 * activity.marimba, dur: "8n", offset: 0, pan: 0.3, x: ma.s.bx, y: ma.s.by });
+    }
+
+    // Strings (atmospheric river, moving camera): one long note per bar, a chord tone picked by the picture's color,
+    // placed nearest the last one so it glides; moisture sets the swell.
+    const st = members.strings;
+    if (st?.on && st.s?.ready && slot === 0 && st.s.meanS >= NORM.riverDensity[0]) {
+      const tones = CHORDS[chord].pcs, k = Math.min(2, Math.floor(norm(hueAngle(st.s.hueHistS), NORM.riverHue) * 3));
+      const options = notesIn(STRINGS_RANGE[0], STRINGS_RANGE[1], [tones[k]]);
+      const midi = mem.strings === null ? options[0] : options.reduce((a, m) => (Math.abs(m - mem.strings) < Math.abs(a - mem.strings) ? m : a));
+      mem.strings = midi;
+      events.push({ member: "strings", voice: "strings", midi, vel: 0.3 + 0.6 * activity.strings, dur: "1m", offset: 0, pan: -0.3, x: st.s.bx, y: st.s.by });
+    }
+
+    // Drone (air quality, moving camera): A and E held while there is pollution color on screen; it opens the filter
+    // and speeds the tremolo. It never changes pitch.
+    const dr = members.drone;
+    const droning = dr?.on && dr.s?.ready && colorAmount(dr.s) >= NORM.pollution[0] * 0.9;
+    if (!droning) { if (mem.droneOn) { events.push({ member: "drone", voice: "droneOff", offset: 0 }); mem.droneOn = false; } }
+    else if (slot === 0 || !mem.droneOn) {
+      const p = activity.drone;
+      events.push({ member: "drone", voice: mem.droneOn ? "droneSet" : "drone", midis: DRONE, vel: 0.5 + 0.3 * p, cutoff: 300 + 1700 * p, rate: 1 + 5 * p, offset: 0, pan: 0, x: dr.s.bx, y: dr.s.by });
+      mem.droneOn = true;
+    }
+
+    // Voice cap: at most VOICE_CAP new notes in one 16th; the quietest new ones are dropped (none are invented).
+    const isNote = (e) => e.midi !== undefined || (e.midis && e.voice !== "droneSet");
+    const notes = events.filter(isNote);
+    if (notes.length > VOICE_CAP) {
+      const keep = new Set(notes.sort((a, b) => b.vel - a.vel).slice(0, VOICE_CAP));
+      for (let i = events.length - 1; i >= 0; i--) if (isNote(events[i]) && !keep.has(events[i])) events.splice(i, 1);
     }
 
     return { events, chord, spoken: CHORDS[chord].spoken, T: mem.T, activity, slot, bar };

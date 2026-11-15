@@ -39,7 +39,7 @@ const stripsEl = $("strips");
 const M = MEMBERS.map((def) => {
   const fig = document.createElement("figure");
   fig.className = "strip"; fig.dataset.member = def.id; fig.style.setProperty("--c", def.color); fig.hidden = true;
-  fig.innerHTML = `<div class="frame" style="aspect-ratio: ${def.aspect}"><video muted playsinline loop preload="auto" aria-hidden="true" tabindex="-1"></video><canvas aria-hidden="true"></canvas></div>
+  fig.innerHTML = `<div class="frame" style="aspect-ratio: ${def.aspect}"><video muted playsinline loop preload="auto" aria-hidden="true" tabindex="-1"></video><canvas aria-hidden="true"></canvas><p class="strip-msg">Loading clip…</p></div>
     <figcaption><span class="role">${def.role}</span> ${def.name}${def.years ? `, ${def.years}` : ""} <span class="src">SVS ${def.svs}</span>${def.positional ? "" : ' <span class="tag">Artistic, not geographic</span>'}</figcaption>`;
   stripsEl.append(fig);
   return { ...def, strip: fig, video: fig.querySelector("video"), layer: createLayer(fig.querySelector("canvas"), def.color), an: null,
@@ -52,6 +52,9 @@ $("how").innerHTML = M.map((m) => `<li><strong>${m.role}, ${m.name}:</strong> ${
 function ensureMedia(m) {
   if (m.an) return;
   m.video.src = m.rec.clip;
+  const msg = m.strip.querySelector(".strip-msg");
+  m.video.addEventListener("loadeddata", () => { msg.hidden = true; }, { once: true });
+  m.video.addEventListener("error", () => { msg.hidden = false; msg.textContent = "This clip did not load. Check the connection, or switch this part off."; });
   m.an = createBandAnalyzer(m.video, m.rec);
   if (degraded) m.an.setMaxRate(8); // switched on after a slow-down: start slowed
   m.video.addEventListener("loadeddata", () => m.an.tick(), { once: true });

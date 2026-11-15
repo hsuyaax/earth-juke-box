@@ -134,3 +134,23 @@ kbd { font: 400 1rem var(--mono); border: 1px solid var(--rule); border-radius: 
    Decorative pseudo-element: no pointer events, nothing for assistive tech. Darkens slightly, so dark text only gains contrast. */
 body::after { content: ""; position: fixed; inset: 0; z-index: 30; pointer-events: none; opacity: 0.05; mix-blend-mode: multiply;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+
+/* The current page in the shared navigation: a thicker underline and bold, not colour alone. */
+.top [aria-current="page"] { font-weight: 700; text-decoration-thickness: 3px; }
+.top .motion-toggle { margin-left: var(--s3); }
+.brand[aria-current="page"] { text-decoration: none; }
+
+/* Earth Band on the landing page: the nine members as covers. */
+.band-members { list-style: none; margin: var(--s7) 0 var(--s5); padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: var(--s5) var(--s4); }
+.band-members li { display: grid; gap: 2px; }
+.band-cover { display: block; margin-bottom: var(--s2); border: 1px solid var(--rule); }
+.band-cover .cv, .band-cover .cv-art { display: block; }
+.band-role { color: var(--ink-2); }
+.band-name { font-weight: 700; }
+@media (max-width: 480px) { .band-members { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+/* The shared header wraps on phones: brand, then the three links and Pause motion. */
+.top { flex-wrap: wrap; row-gap: var(--s1); }
+@media (max-width: 720px) {
+  .top nav { gap: var(--s4); flex-wrap: wrap; }
+  .top .motion-toggle { margin-left: 0; }
+}

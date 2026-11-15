@@ -10,15 +10,18 @@ export const Line = ({ children, className = "" }) => (
 
 function Logo() { return <span className="logo" aria-hidden="true" dangerouslySetInnerHTML={{ __html: logoSVG(32) }} />; }
 
-export function Header() {
+// One navigation on every page, same order and names: Jukebox, Earth Band, How it works. The page you are on is marked
+// with aria-current (the landing page marks the brand link, which is home).
+export const NAV = [["play.html", "Jukebox", "jukebox"], ["band.html", "Earth Band", "band"], [NOTES_URL, "How it works", "notes"]];
+export function Header({ current = "home" }) {
+  const cur = (id) => (id === current ? { "aria-current": "page" } : {});
   return (
     <header className="top">
-      <a className="brand" href="./"><Logo /><span>Earth Jukebox</span></a>
+      <a className="brand" href="./" {...cur("home")}><Logo /><span>Earth Jukebox</span></a>
       <nav aria-label="Main">
-        <a href="play.html">Play</a>
-        <a href={NOTES_URL}>How it works</a>
-        <MotionToggle />
+        {NAV.map(([href, label, id]) => <a key={id} href={href} {...cur(id)}>{label}</a>)}
       </nav>
+      <MotionToggle />
     </header>
   );
 }

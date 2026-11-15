@@ -213,3 +213,10 @@ footer { border-top: 1px solid var(--line); padding-top: var(--s4); padding-bott
 }
 
 .scale-only[hidden] { display: none; }
+
+/* The current page in the shared navigation: a thicker underline and bold, not colour alone. */
+.top [aria-current="page"] { font-weight: 700; text-decoration-thickness: 3px; }
+
+.together { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2) var(--s4); margin: 0 0 var(--s6); color: var(--text-2); }
+.together-link { display: inline-flex; align-items: center; min-height: 48px; padding: 0 var(--s4); border: 2px solid var(--amber); border-radius: 8px; color: var(--text); font-weight: 700; text-decoration: none; }
+.together-link:hover { background: color-mix(in srgb, var(--amber) 15%, transparent); }

@@ -135,3 +135,25 @@ footer strong { color: var(--text); }
 @media (max-width: 360px) { .pad-name { font-size: 1rem; } } /* labels: 16 px minimum, on the narrowest phones only */
 .pads.grid .pad > .role, .pads.grid .pad > .pad-name, .pads.grid .pad > .pad-s { width: 100%; text-align: center; } /* full pad width, so long words wrap instead of spilling out */
 @media (max-width: 360px) { .pads.grid .pad > .role { letter-spacing: 0; } } /* "ARPEGGIO" fits a 320 px phone pad at 16 px */
+
+/* The current page in the shared navigation: a thicker underline and bold, not colour alone. */
+.top [aria-current="page"] { font-weight: 700; text-decoration-thickness: 3px; }
+
+/* Matching the jukebox: Play is the largest control with a ring; per-strip loading and failure messages; on phones the
+   transport bar stays pinned at the top while the strips and pads scroll. */
+.transport button.primary { min-height: 56px; font-size: 1.25rem; box-shadow: 0 0 0 3px var(--vinyl), 0 0 0 6px var(--amber); }
+.strip-msg { position: absolute; inset: 0; margin: 0; display: grid; place-items: center; padding: var(--s3); text-align: center; line-height: 1.4; background: rgba(8, 18, 41, 0.9); color: var(--text); }
+.strip-msg[hidden] { display: none; }
+.harmony { margin-top: var(--s4); }
+@media (max-width: 720px) {
+  .transport { position: sticky; top: 0; z-index: 5; background: var(--vinyl); padding: var(--s2) 0; margin: 0; box-shadow: 0 6px 12px rgba(0, 0, 0, 0.35); }
+  .transport .hint { display: none; } /* the hint stays in the page text below the title */
+}
+@media (max-width: 720px) {
+  .top nav { gap: var(--s4); flex-wrap: wrap; }
+  .transport { gap: var(--s2) var(--s3); }
+  .transport button.primary { min-width: 96px; min-height: 52px; font-size: 1.125rem; }
+  .transport .vol span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); } /* name kept for assistive tech */
+  .transport .vol input { width: 96px; }
+  .transport #wav-btn { min-height: 44px; padding: var(--s1) var(--s3); }
+}

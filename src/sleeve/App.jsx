@@ -158,6 +158,34 @@ function HearIt() {
   );
 }
 
+// Earth Band: all nine NASA visualizations as one band (src/band/members.js). Covers are decorative; the names are text.
+const BAND = [["drums", "Drums", "Lightning", "lightning", "#FFF3B0"], ["bass", "Bass", "Ocean currents", "currents", "#5CC8FF"], ["lead", "Lead", "Night lights", "nightlights", "#9B7BFF"],
+  ["pad", "Pad", "CO2", "co2", "#FF8A3D"], ["shaker", "Shaker", "Aerosols", "aerosols", "#C39BDB"], ["arp", "Arpeggio", "Perpetual Ocean", "perpetualocean", "#7FE3D0"],
+  ["marimba", "Marimba", "Forest height", "gedi", "#9BE36B"], ["strings", "Strings", "Atmospheric river", "atmosriver", "#86AAA8"], ["drone", "Drone", "Air quality", "airquality", "#E6E1A3"]];
+function BandSection() {
+  return (
+    <section className="band band-section" aria-labelledby="band-h">
+      <div className="statement">
+        <p className="eyebrow side"><span>03</span> — Play them together</p>
+        <h2 id="band-h" className="display-l"><Line>Nine pictures.</Line><Line className="indent">One <em>band</em>.</Line></h2>
+      </div>
+      <div className="cols">
+        <p>Earth Band plays NASA visualizations together as one band, each read live from its own video: lightning on drums, ocean currents on bass, night lights on lead, and six more. Every note still comes from a frame; music theory only decides which notes are allowed.</p>
+        <p><strong>An artistic remix.</strong> These visualizations cover different years and are played together, not as simultaneous events.</p>
+      </div>
+      <ul className="band-members">
+        {BAND.map(([id, role, name, cover, ink]) => (
+          <li key={id}>
+            <span className="band-cover" aria-hidden="true" dangerouslySetInnerHTML={{ __html: coverHTML(cover, { ink }) }} />
+            <span className="band-role mono">{role}</span> <span className="band-name">{name}</span>
+          </li>
+        ))}
+      </ul>
+      <p className="ctas"><a className="play" href="band.html">Play the band</a></p>
+    </section>
+  );
+}
+
 /* The probe, drawn: a map, the square under the pointer, and the keys. Decorative; the list beside it carries the same facts. */
 function ProbeFigure() {
   // Drawn at 360 wide so the key glyphs never render below 16 px on a phone.
@@ -185,7 +213,7 @@ function TouchIt() {
   return (
     <section className="band" aria-labelledby="touch-h">
       <div className="statement">
-        <p className="eyebrow side"><span>03</span> — Touch it</p>
+        <p className="eyebrow side"><span>04</span> — Touch it</p>
         <h2 id="touch-h" className="display-l"><Line>Now put your</Line><Line className="indent"><em>finger</em> on it.</Line></h2>
       </div>
       <figure className="plate plate-left">
@@ -215,7 +243,7 @@ function Proof() {
   return (
     <section className="band" aria-labelledby="proof-h">
       <div className="statement">
-        <p className="eyebrow side"><span>04</span> — How we know it works</p>
+        <p className="eyebrow side"><span>05</span> — How we know it works</p>
         <h2 id="proof-h" className="display-l"><Line>Measured,</Line><Line className="indent">not <em>guessed</em>.</Line></h2>
       </div>
       <ol className="facts">
@@ -248,6 +276,7 @@ export default function App() {
         <Problem />
         <Divider />
         <HearIt />
+        <BandSection />
         <TouchIt />
         <Proof />
       </main>

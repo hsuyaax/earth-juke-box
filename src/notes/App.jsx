@@ -74,7 +74,7 @@ export default function App() {
   return (
     <>
       <a className="skip" href="#main">Skip to content</a>
-      <Header />
+      <Header current="notes" />
       <main id="main" className="notes-page">
         <Strip name="atmosriver" plate="01">An atmospheric river from a NASA Earth system model (SVS 4960), printed in the strings' ink.</Strip>
         <section className="title-block" aria-labelledby="notes-h">

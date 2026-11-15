@@ -14,6 +14,7 @@
     <p class="brand"><a href="./"><span class="logo" id="logo" aria-hidden="true"></span><span>Earth Jukebox</span></a></p>
     <nav aria-label="Main">
       <a href="play.html">Jukebox</a>
+      <a href="band.html" aria-current="page">Earth Band</a>
       <a href="notes.html">How it works</a>
     </nav>
   </header>
@@ -24,7 +25,7 @@
     <p class="lead"><strong>The data decides when, where, how much, and which way the harmony moves. Music theory decides which exact notes are allowed.</strong> Every note comes from a frame; the pads only switch parts on, off, or thinner.</p>
     <p class="remix"><strong>An artistic remix.</strong> These visualizations cover different years and are played together, not as simultaneous events.</p>
 
-    <div class="transport" role="group" aria-label="Player">
+    <div class="transport" id="controls" role="group" aria-label="Player">
       <button id="play" class="primary" type="button">Play</button>
       <label class="vol"><span>Volume</span><input id="volume" type="range" min="0" max="100" value="50" /></label>
       <button id="wav-btn" type="button">Save 20 s as WAV</button>
@@ -32,17 +33,18 @@
     </div>
     <p id="perf-notice" class="notice" hidden></p>
 
-    <div class="scenes-row">
-      <p class="role" id="scenes-h">Quick start</p>
-      <div id="scenes" class="scenes" role="group" aria-labelledby="scenes-h"></div>
-    </div>
+    <section class="strips" id="strips" aria-label="Members that are on"></section>
 
     <div class="harmony">
       <p class="chord"><span class="role">Chord</span> <strong id="chord-name">–</strong> <span class="role">Tension</span> <span id="tension">–</span></p>
       <label class="check"><input type="checkbox" id="speak-chords" checked /> Announce chord changes</label>
     </div>
 
-    <section class="strips" id="strips" aria-label="Members that are on"></section>
+    <div class="scenes-row">
+      <p class="role" id="scenes-h">Quick start</p>
+      <div id="scenes" class="scenes" role="group" aria-labelledby="scenes-h"></div>
+    </div>
+
 
     <section class="pads-section" aria-labelledby="pads-h">
       <h2 id="pads-h">Pads</h2>

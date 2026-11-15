@@ -112,7 +112,7 @@ export default function App() {
               <Table caption="The pages" head={["Page", "What it is for"]} rows={[
                 [<a href="./">Landing page</a>, "The idea in one screen: the live lightning clip with the engine's rings, a Play button, and a short story: the problem, the records, touch, and how it was measured."],
                 [<a href="play.html">Jukebox</a>, "The main instrument: ten records, Play, the explore probe, liner notes per record, and tools (what the engine sees, scales, save as WAV)."],
-                [<a href="band.html">Earth Band (beta)</a>, "Up to four records at once as one band (all nine NASA visualizations are members), with pads, scenes and a chord display. Not linked from the jukebox yet: it has not been tested on a real phone."],
+                [<a href="band.html">Earth Band (beta)</a>, "The NASA visualizations together as one band (all nine are members; four at once on a phone, more on a computer that keeps up), with pads, scenes and a chord display. Linked from the jukebox and the landing page; marked beta because it has not been tested on a real phone."],
                 [<a href="notes.html">This guide</a>, "How it works, for a judge, a teacher, or a developer."],
                 [<a href="calibrate.html">Calibration page</a>, "A developer tool: click any point of a clip to see its pixel values, its cell, and the class it was given."],
               ]} />

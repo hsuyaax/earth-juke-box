@@ -17,6 +17,11 @@ How the recheck was run: the production build (`npm run build`) served from a su
 | 7 | Header navigation | Different on every page (Play / How it works; Home / How it works; Jukebox / How it works), and no page marked as current | Fixed in Part 2 (one shared navigation with `aria-current`) |
 | 8 | Repo | `AGENTS.md`, `BUILD_PLAN.md`, `DESIGN.md` were git-ignored, and the pass documents untracked | Fixed: tracked; `DESIGN.md` had a personal folder path, removed first |
 | 9 | Jukebox at 320 and 375 px | The sweep flagged "Volume" as clipped text | Not a defect: that label is deliberately visually hidden on phones and still names the slider for screen readers |
+| 10 | Earth Band page, jukebox crate, guide | "Up to four play at once" is not what the code does: four is the cap on phones and at the start, and a computer that has kept up for 5 seconds may add more (`src/band/main.js`) | Fixed in Part 6: all three say four on a phone, more on a computer that keeps up |
+| 11 | Guide, pages table | Said Earth Band was "not linked from the jukebox yet", untrue after Part 2 | Fixed in Part 6 |
+| 12 | Guide description | Said the guide explains the pipeline "in four figures"; it is now a 16-part guide | Fixed in Part 6 |
+
+Part 6 also measured the landing page's first load: 0.6 MB transferred in the first 5 seconds (the lightning preview streams by range requests), and Tone.js is not loaded until Play. Every image on every page has alt text or sits inside an `aria-hidden` element.
 
 ## Final recheck: checks that passed
 
@@ -55,3 +60,5 @@ Each of these shipped to a branch, or nearly did, before it was caught. They are
 | Commit messages that overstated a check (one claimed no text was clipped at 320 px while a check still found one; another rounded a contrast figure up) | Re-reading each message against the test output | The code was fixed and the messages corrected before anything was pushed |
 | Commits carried an AI co-author line the team did not want | The team asked for it to be removed | History rewritten before the first push to the new repository; no co-author lines since |
 | Two screenshots from a test script were written into the repository root | `git status` before a commit | Moved out before committing |
+| The "before" screenshots taken at the start of the second design pass showed a different app that was running on the same local port, not Earth Jukebox | Opening them in Part 6 to reuse them | Not used. `docs/screenshots/before/` is taken from the live site instead, which still runs commit `b26dcc1`; scripts now print each page's title next to its screenshot |
+| A sentence written in Part 2 ("plays up to four of these visualizations at once") repeated an untrue claim instead of checking the code | Checking each band claim against `src/band/main.js` in Part 6 | Corrected (finding 10) |

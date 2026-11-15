@@ -6,7 +6,7 @@ import "@fontsource/atkinson-hyperlegible-mono/400.css";
 import "@fontsource/instrument-serif/400.css";
 import "./tokens.css";
 import "./style.css";
-import { coverSVG } from "./covers.js";
+import { coverSVG, INK } from "./covers.js";
 import { logoSVG, pulseLogo } from "./logo.js";
 import { createAnalyzer } from "./analysis.js";
 import { withVoices, setVolume, silenceDrones, RAGAS, setScaleOverride, auditionScale, startRecording, stopRecordingAsWav } from "./audio.js";
@@ -95,7 +95,7 @@ const shelf = $("shelf"), shelfMore = $("shelf-more");
 RECORDS.forEach((r, i) => {
   const li = document.createElement("li");
   const k = keyOf(i);
-  li.innerHTML = `<button aria-pressed="false" aria-keyshortcuts="${k}"><span class="art"><img class="disc" src="discs/${r.id}.jpg" alt="" loading="lazy" decoding="async" width="64" height="64"><span class="cover-box">${coverSVG(r.id, 64)}</span></span><span class="t">${k}. ${r.title}</span><span class="d">${r.blurb}</span></button>`;
+  li.innerHTML = `<button aria-pressed="false" aria-keyshortcuts="${k}"><span class="sleeve" aria-hidden="true" style="--ink: ${INK[r.id] || INK.today}"><span class="disc-track"><span class="disc"></span></span><span class="cover">${coverSVG(r.id, 64)}</span></span><span class="t">${k}. ${r.title}</span><span class="d">${r.blurb}</span></button>`;
   li.firstChild.addEventListener("click", () => select(i));
   (i < FEATURED.length ? shelf : shelfMore).append(li);
 });

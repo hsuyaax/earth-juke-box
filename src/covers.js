@@ -137,6 +137,8 @@ const PATTERNS = {
     return out;
   },
 };
+// Each record's ink (DESIGN_PASS_2 1.2): its main voice color, used for its cover, its disc label, its accent and its glow.
+export const INK = COLOR;
 const FILLED = new Set(["nightlights", "airquality", "gedi", "atmosriver"]); // patterns drawn with fills, the rest with strokes
 
 export function coverSVG(id, size = 200) {

@@ -72,13 +72,22 @@ kbd { border: 1px solid var(--line); border-radius: 4px; padding: 0 6px; font: i
 .shelf { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s2); }
 .shelf button { width: 100%; text-align: left; display: grid; grid-template-columns: 96px 1fr; column-gap: var(--s3); align-items: center; border-radius: 2px; }
 .shelf button > span { grid-column: 2; }
-.art { position: relative; grid-column: 1 !important; grid-row: 1 / 3; width: 96px; height: 64px; display: block; }
-.cover-box { position: absolute; left: 0; top: 0; width: 64px; height: 64px; border: 1px solid var(--line); background: var(--groove); line-height: 0; }
-.cover-box svg { width: 100%; height: 100%; }
-.disc { position: absolute; left: 0; top: 0; width: 64px; height: 64px; border-radius: 50%; border: 3px solid #000; box-shadow: 0 0 0 1px var(--line); transition: translate 600ms var(--ease-out); }
-.shelf [aria-pressed="true"] .disc { translate: 28px 0; }
-.playing .shelf [aria-pressed="true"] .disc { animation: spin 6s linear infinite; }
-@keyframes spin { to { rotate: 360deg; } }
+/* Sleeve (DESIGN_PASS_2 section 4): the disc sits behind an opaque cover and slides out of the cover's open right edge.
+   Slide and spin are on different elements: .disc-track translates, .disc rotates. No overflow clipping on the sleeve. */
+.sleeve { position: relative; grid-column: 1 !important; grid-row: 1 / 3; display: block; width: 64px; aspect-ratio: 1; isolation: isolate; }
+.cover { position: relative; z-index: 2; display: block; width: 100%; height: 100%; background-color: var(--groove); border: 1px solid var(--line); line-height: 0; }
+.cover svg { width: 100%; height: 100%; }
+.cover::after { content: ""; position: absolute; top: 0; right: 0; bottom: 0; width: 6px; background: linear-gradient(to left, rgba(0, 0, 0, 0.55), transparent); } /* the slot */
+.disc-track { position: absolute; z-index: 1; top: 4%; left: 4%; width: 92%; height: 92%; display: block; transform: translateX(0); transition: transform 500ms cubic-bezier(0.2, 0.7, 0.2, 1); }
+.shelf [aria-pressed="true"] .disc-track { transform: translateX(46%); }
+.disc { display: block; width: 100%; height: 100%; border-radius: 50%; box-shadow: 0 0 0 1px #000;
+  background:
+    radial-gradient(circle, var(--groove) 0 5%, transparent 5.5%), /* spindle hole */
+    conic-gradient(from 20deg, transparent 0 30deg, rgba(255, 255, 255, 0.16) 50deg, transparent 70deg, transparent 210deg, rgba(255, 255, 255, 0.1) 230deg, transparent 250deg), /* sheen, so the spin shows */
+    radial-gradient(circle, var(--ink) 0 30%, #050505 31%), /* label in the record's ink */
+    repeating-radial-gradient(circle, #050505 0 1.4px, #1d1d1d 1.4px 2.6px); /* grooves */ }
+.playing .shelf [aria-pressed="true"] .disc { animation: spin 4s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
 .shelf .t { font: 400 1.5rem/1.15 var(--display); }
 .shelf .d { color: var(--text-2); }
 #shelf-more { margin-top: var(--s2); }

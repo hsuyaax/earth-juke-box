@@ -96,13 +96,13 @@ transport.scheduleRepeat((time) => { Tone.getDraw().schedule(() => pulseLogo($("
 transport.scheduleRepeat((time) => { Tone.getDraw().schedule(() => glow.breathe(), time); }, "1m");
 
 // ---- records ----
-const shelf = $("shelf"), shelfMore = $("shelf-more");
+const shelf = $("shelf"), shelfMore = $("shelf-more"), shelfLive = $("shelf-live");
 RECORDS.forEach((r, i) => {
   const li = document.createElement("li");
   const k = keyOf(i);
-  li.innerHTML = `<button aria-pressed="false" aria-keyshortcuts="${k}"><span class="sleeve" aria-hidden="true" style="--ink: ${INK[r.id] || INK.today}"><span class="disc-track"><span class="disc"></span></span><span class="cover">${coverHTML(r.id)}</span></span><span class="t">${k}. ${r.title}</span><span class="d">${r.blurb}</span></button>`;
+  li.innerHTML = `<button aria-pressed="false" aria-keyshortcuts="${k}"><span class="sleeve" aria-hidden="true" style="--ink: ${INK[r.id] || INK.today}"><span class="disc-track"><span class="disc"></span></span><span class="cover">${coverHTML(r.id)}</span></span><span class="t">${k}. ${r.title}</span><span class="d">${r.blurb}</span></button><span class="np-tag mono" aria-hidden="true">Now playing</span>`;
   li.firstChild.addEventListener("click", () => select(i));
-  (i < FEATURED.length ? shelf : shelfMore).append(li);
+  (i < FEATURED.length ? shelf : r === today ? shelfLive : shelfMore).append(li);
 });
 const allButtons = () => document.querySelectorAll(".shelf button");
 
@@ -128,6 +128,12 @@ async function select(i) {
   refreshMarkers();
   showState();
   $("notes-title").textContent = rec.title;
+  const ink = INK[rec.id] || INK.today;
+  document.documentElement.style.setProperty("--ink", ink); // the record's ink drives the Play ring, scrub fill, glow and sleeve accent
+  $("np-num").textContent = String(i + 1).padStart(2, "0");
+  $("np-caption").textContent = `Key ${keyOf(i)} · ${rec.svs ? "SVS " + rec.svs : "NASA GIBS"} · ${rec.credit}`;
+  $("np-sleeve").innerHTML = `<span class="sleeve" style="--ink: ${ink}"><span class="disc-track"><span class="disc"></span></span><span class="cover">${coverHTML(rec.id)}</span></span>`;
+  document.querySelectorAll(".shelf li").forEach((li, k) => li.classList.toggle("is-current", k === i));
   $("notes-shows").textContent = rec.notes.shows;
   $("notes-hear").textContent = rec.notes.hear;
   $("notes-listen").textContent = rec.notes.listen;
@@ -163,6 +169,12 @@ async function select(i) {
   }
 }
 
+video.addEventListener("error", () => {
+  if (rec?.live) return; // the live record has its own message
+  $("loading").hidden = false;
+  $("loading").textContent = "This clip did not load. Check the connection, or pick another record.";
+});
+
 // ---- playback ----
 // First play: sound starts in darkness, the picture fades in two seconds later (§11).
 let firstPlay = true;
@@ -170,7 +182,7 @@ const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 if (reducedMotion) stage.classList.remove("dark");
 async function play() {
   await unlockAudio();
-  if (firstPlay) setTimeout(() => stage.classList.remove("dark"), reducedMotion ? 0 : 2000);
+  if (firstPlay) { stage.classList.add("starting"); setTimeout(() => stage.classList.remove("dark", "starting"), reducedMotion ? 0 : 2000); }
   firstPlay = false;
   await video.play();
 }
@@ -235,6 +247,10 @@ pad.querySelectorAll("[data-move]").forEach((b) => b.addEventListener("click", (
   const [dx, dy] = b.dataset.move.split(",").map(Number);
   probe.move(dx, dy);
 }));
+const exploreBtn = $("explore-btn");
+const setExplore = (open) => { pad.hidden = !open; exploreBtn.setAttribute("aria-expanded", String(open)); };
+setExplore(matchMedia("(pointer: coarse)").matches);
+exploreBtn.addEventListener("click", () => setExplore(pad.hidden));
 $("describe").addEventListener("click", () => { unlockAudio(); probe.describe(); });
 $("legend-btn").addEventListener("click", async () => { await unlockAudio(); probe.legend((t) => { caption.textContent = t; }); });
 

@@ -1,38 +1,36 @@
-/* The record (jukebox): vinyl surface. The footage and the ripples are the only bright things. DESIGN.md sections 5-8. */
+/* The record (jukebox): vinyl surface. The footage and the ripples are the only bright things. DESIGN.md sections 5-8,
+   POLISH_PASS_3 part A: a turntable in three zones (stage and transport; now playing and notes; the crate), tools below.
+   Type: one large title (display), one body size (18 px Atkinson), one caption size (16 px mono). Space groups; borders
+   stay only on real controls (3:1 or better). */
 :root { color-scheme: dark; }
 * { box-sizing: border-box; }
-body {
-  overflow-x: clip;
-  margin: 0;
-  background: var(--vinyl);
-  color: var(--text);
-  font: 18px/1.55 var(--body);
-}
-.mono { font: 400 1rem/1.3 var(--mono); text-transform: uppercase; letter-spacing: 0.06em; }
-main, footer, .eonet { max-width: 1360px; margin: 0 auto; padding-left: var(--gutter); padding-right: var(--gutter); }
+body { overflow-x: clip; margin: 0; background: var(--vinyl); color: var(--text); font: 18px/1.55 var(--body); }
+.mono { font: 400 1rem/1.35 var(--mono); text-transform: uppercase; letter-spacing: 0.06em; }
+main, footer { max-width: 1360px; margin: 0 auto; padding-left: var(--gutter); padding-right: var(--gutter); }
 a { color: var(--amber); text-underline-offset: 0.18em; }
-h2 { font-size: 1.25rem; margin: 0 0 var(--s2); }
-h3 { font-size: 1em; margin: var(--s4) 0 var(--s1); color: var(--amber); }
+h2, h3 { margin: 0; }
+.label { margin: 0 0 var(--s3); color: var(--text-3); font-weight: 400; }
 
 /* header: one quiet row */
-.top { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2) var(--s5); max-width: 1360px; margin: 0 auto; padding: var(--s4) var(--gutter) 0; }
+.top { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2) var(--s5); max-width: 1360px; margin: 0 auto; padding: var(--s2) var(--gutter); }
 .brand { margin: 0; font: 700 1em var(--body); }
 .brand a { display: inline-flex; align-items: center; gap: var(--s3); min-height: 48px; color: var(--text); text-decoration: none; }
 .logo { display: inline-flex; }
 .statusline { margin: 0; color: var(--text-3); margin-right: auto; }
 .top nav { display: flex; gap: var(--s5); }
 .top nav a { min-height: 48px; display: inline-flex; align-items: center; color: var(--text); }
-.pitch { max-width: 1360px; margin: 0 auto; padding: var(--s2) var(--gutter) var(--s4); color: var(--text-2); }
 
-/* the deck: a near-black surround; the stage shrinks to the video box so the canvases line up with the picture exactly */
+/* ---- zone 1: the turntable ---- */
 /* Deck: groove texture, the record's ink as its accent, and an ambient glow from the picture (src/glow.js). Colors are
    registered so they crossfade: glow colors over 300 ms (eased further in JS), the ink over 600 ms. */
 @property --g1 { syntax: "<color>"; inherits: true; initial-value: #0d1b3d; }
 @property --g2 { syntax: "<color>"; inherits: true; initial-value: #0d1b3d; }
 @property --g3 { syntax: "<color>"; inherits: true; initial-value: #0d1b3d; }
 @property --ink { syntax: "<color>"; inherits: true; initial-value: #ffc25c; }
-.deck { position: relative; isolation: isolate; background: var(--groove); padding: var(--s5) var(--gutter) var(--s3); margin: 0 calc(50% - 50vw);
-  border-top: 3px solid var(--ink); transition: --g1 300ms linear, --g2 300ms linear, --g3 300ms linear, --ink 600ms ease; }
+:root { transition: --ink 600ms ease; }
+.turntable { margin: 0 calc(50% - 50vw); background: var(--groove); }
+.deck { position: relative; isolation: isolate; background: var(--groove); padding: var(--s4) var(--gutter) var(--s2);
+  border-top: 3px solid var(--ink); transition: --g1 300ms linear, --g2 300ms linear, --g3 300ms linear; }
 .deck::before { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; opacity: 0.3; transition: opacity 260ms ease;
   background:
     radial-gradient(45% 75% at 18% 45%, var(--g1), transparent 72%),
@@ -42,55 +40,97 @@ h3 { font-size: 1em; margin: var(--s4) 0 var(--s1); color: var(--amber); }
 .deck::after { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; /* grooves */
   background: repeating-radial-gradient(circle at 50% 140%, rgba(244, 239, 230, 0.03) 0 1px, transparent 1px 7px); }
 .deck.breathe::before { opacity: 0.35; } /* kept low: the caption (18 px) sits on the deck and must stay AA at the brightest glow */
-.stage { position: relative; background: #000; line-height: 0; width: fit-content; margin: 0 auto; touch-action: none; cursor: crosshair; }
-.stage video { display: block; width: auto; height: auto; max-width: 100%; max-height: 65vh; transition: opacity 1.5s; }
+/* The stage shrinks to the video box so the canvases line up with the picture exactly. It is the biggest thing above the fold. */
+.stage { position: relative; background: #000; line-height: 0; width: fit-content; margin: 0 auto; touch-action: none; cursor: crosshair; box-shadow: 0 0 0 1px rgba(244, 239, 230, 0.08); }
+.stage video { display: block; width: auto; height: auto; max-width: 100%; max-height: calc(100svh - 190px); min-height: 160px; transition: opacity 1.5s; }
 .stage canvas { position: absolute; pointer-events: none; }
 #ripples { inset: 0; width: 100%; height: 100%; }
 #overlay { image-rendering: pixelated; }
-.stage.dark video { opacity: 0; }
+/* Before the first Play: a dimmed still and a hint, not a black box. On the first Play the sound starts in darkness and
+   the picture fades in two seconds later (AGENTS.md section 11). */
+.stage.dark video { opacity: 0.35; }
+.stage.dark.starting video { opacity: 0; }
+.press-play { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); margin: 0; padding: var(--s2) var(--s4); line-height: 1.4;
+  background: rgba(8, 18, 41, 0.9); border: 1px solid var(--line); color: var(--text); white-space: nowrap; pointer-events: none; }
+.stage:not(.dark) .press-play, .stage.starting .press-play { display: none; }
 .stage:focus-visible { outline-offset: 2px; }
-.caption { min-height: 1.5em; margin: var(--s3) 0 0; text-align: center; color: var(--text-2); }
-.loading { position: absolute; inset: 0; margin: 0; display: grid; place-items: center; line-height: 1.5; background: rgba(8, 18, 41, 0.88); color: var(--text); }
+.caption { min-height: 1.5em; margin: var(--s2) 0 0; text-align: center; color: var(--text-2); }
+.loading { position: absolute; inset: 0; margin: 0; padding: var(--s4); display: grid; place-items: center; text-align: center; line-height: 1.5; background: rgba(8, 18, 41, 0.9); color: var(--text); }
 .loading[hidden] { display: none; }
 
-/* controls recede: thin borders that still meet 3:1 */
-.controls { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s3) var(--s4); padding: var(--s3) 0; }
-button {
-  font: inherit; color: var(--text); background: transparent;
-  border: 2px solid var(--line); border-radius: 8px;
-  min-height: 48px; padding: var(--s2) var(--s4); cursor: pointer;
-}
+/* Transport bar: one strip under the stage. Play is the largest control; its ring and the scrub fill take the record's ink. */
+.transport { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s3) var(--s5); max-width: 1360px; margin: 0 auto; padding: var(--s3) var(--gutter); }
+button { font: inherit; color: var(--text); background: transparent; border: 2px solid var(--line); border-radius: 8px; min-height: 48px; padding: var(--s2) var(--s4); cursor: pointer; }
 button:hover { border-color: var(--text-2); }
-button.primary { background: var(--amber); color: var(--groove); border-color: var(--amber); font-weight: 700; min-width: 112px; }
-button[aria-pressed="true"] { border-color: var(--amber); }
+button.primary { background: var(--amber); color: var(--groove); border-color: var(--amber); font-weight: 700; min-width: 132px; min-height: 56px; font-size: 1.25rem;
+  box-shadow: 0 0 0 3px var(--groove), 0 0 0 6px var(--ink); }
+button[aria-pressed="true"], button[aria-expanded="true"] { border-color: var(--amber); }
 :focus-visible { outline: 3px solid var(--amber); outline-offset: 3px; }
-input[type="range"] { accent-color: var(--amber); min-height: 48px; }
-.scrub { flex: 1 1 240px; display: flex; }
+button.primary:focus-visible { outline-offset: 8px; }
+input[type="range"] { accent-color: var(--ink); min-height: 48px; }
+.scrub { flex: 1 1 260px; display: flex; }
 .scrub input { width: 100%; }
 .vol { display: flex; align-items: center; gap: var(--s2); }
 .time { font-variant-numeric: tabular-nums; color: var(--text-2); }
+.explore-btn { margin-left: auto; }
 select { font: inherit; color: var(--text); background: var(--vinyl); border: 2px solid var(--line); border-radius: 8px; min-height: 48px; padding: var(--s1) var(--s2); }
 button:disabled, input:disabled { opacity: 0.5; cursor: not-allowed; }
-.small { color: var(--text-2); margin: var(--s1) 0 var(--s2); }
-.keys { margin: 0 0 var(--s4); color: var(--text-2); }
-kbd { border: 1px solid var(--line); border-radius: 4px; padding: 0 6px; font: inherit; }
 
-/* explore pad */
-.probe-pad { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2) var(--s4); padding-bottom: var(--s5); }
-.pad-h { font-size: 1em; margin: 0; }
+/* Explore pad (opens from the transport bar) */
+.probe-pad { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2) var(--s4); max-width: 1360px; margin: 0 auto; padding: 0 var(--gutter) var(--s4); }
+.probe-pad[hidden] { display: none; }
+.pad-h { margin: 0; color: var(--text-3); }
 .help { flex: 1 1 100%; order: 3; margin: 0; color: var(--text-2); max-width: 70ch; }
 .pad { display: flex; gap: var(--s2); flex-wrap: wrap; }
 .pad button { min-width: 56px; min-height: 56px; font-size: 1.25rem; }
 .pad #describe { font-size: 1em; }
 
-/* shelf: records as sleeves; the chosen disc slides half out and spins while playing */
-.lower { display: grid; grid-template-columns: minmax(280px, 1fr) 2fr; gap: var(--s6); padding-bottom: var(--s5); }
-.shelf { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s2); }
-.shelf button { width: 100%; text-align: left; display: grid; grid-template-columns: 96px 1fr; column-gap: var(--s3); align-items: center; border-radius: 2px; }
-.shelf button > span { grid-column: 2; }
+/* ---- zone 2: now playing and liner notes ---- */
+.record-info { display: grid; grid-template-columns: minmax(260px, 1fr) minmax(0, 1.6fr); gap: var(--s7); padding: var(--s7) 0; }
+.now { display: grid; grid-template-columns: auto 1fr; column-gap: var(--s5); align-content: start; }
+.now .label { grid-column: 1 / -1; }
+.np-sleeve { grid-row: 2 / 5; width: 150px; }
+.np-sleeve .sleeve { width: 150px; }
+.np-sleeve .disc-track { transform: translateX(46%); } /* the record that is playing is always out of its sleeve */
+.playing .np-sleeve .disc { animation: spin 4s linear infinite; }
+.np-num { margin: 0 0 var(--s1) 70px; font-size: var(--display-m); line-height: 1; color: var(--ink); letter-spacing: 0; } /* clears the disc */
+.np-title { margin-left: 70px; font: 400 var(--display-m)/1.02 var(--display); }
+.np-caption { margin: var(--s3) 0 0 70px; color: var(--text-3); }
+.notes { border-left: 1px solid var(--line); padding-left: var(--s6); }
+.notes .pitch { margin: 0 0 var(--s3); color: var(--text); }
+.notes h3 { font: 400 1rem/1.35 var(--mono); text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-3); margin: var(--s4) 0 var(--s1); }
+.notes p { margin: 0; max-width: 66ch; }
+.credit { margin-top: var(--s4) !important; color: var(--text-2); }
+#legend-btn { margin-top: var(--s5); }
+
+/* ---- zone 3: the crate ---- */
+.crate { border-top: 1px solid var(--line); padding: var(--s7) 0 var(--s6); }
+.crate-h { font: 400 var(--display-m)/1 var(--display); margin-bottom: var(--s5); }
+.crate-group + .crate-group { margin-top: var(--s7); }
+.group-h { font: 400 1.75rem/1.1 var(--display); margin-bottom: var(--s3); }
+.group-note { margin: 0 0 var(--s4); color: var(--text-2); max-width: 70ch; }
+.swipe { display: none; margin: 0 0 var(--s2); color: var(--text-3); }
+.shelf { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s5) var(--s4); }
+.shelf.featured { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.shelf.bsides { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+.shelf.live { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+.shelf li { position: relative; display: flex; flex-direction: column; }
+/* A card is a real button (kept bordered, 3:1); the sleeve sits on top with room on its right for the disc to come out. */
+.shelf button { flex: 1; width: 100%; text-align: left; display: flex; flex-direction: column; align-items: flex-start; gap: var(--s2);
+  padding: var(--s4); border-radius: 4px; border-color: color-mix(in srgb, var(--line) 70%, transparent); border-color: var(--line); }
+.shelf .sleeve { width: 96px; margin-bottom: var(--s2); }
+.shelf.featured .sleeve { width: 144px; } /* featured sleeves are 1.5 times the B-sides */
+.shelf .t { font: 700 1.125rem/1.3 var(--body); }
+.shelf.featured .t { font: 400 1.75rem/1.1 var(--display); }
+.shelf .d { color: var(--text-2); }
+/* The record that is playing: disc out, a rule under the card in its ink, and the words "Now playing". */
+.shelf button[aria-pressed="true"] { border-color: var(--text-2); box-shadow: inset 0 -4px 0 var(--ink); }
+.np-tag { display: none; margin-top: var(--s2); color: var(--text-2); }
+.shelf li.is-current .np-tag { display: block; }
+
 /* Sleeve (DESIGN_PASS_2 section 4): the disc sits behind an opaque cover and slides out of the cover's open right edge.
    Slide and spin are on different elements: .disc-track translates, .disc rotates. No overflow clipping on the sleeve. */
-.sleeve { position: relative; grid-column: 1 !important; grid-row: 1 / 3; display: block; width: 64px; aspect-ratio: 1; isolation: isolate; }
+.sleeve { position: relative; display: block; aspect-ratio: 1; isolation: isolate; }
 .cover { position: relative; z-index: 2; display: block; width: 100%; height: 100%; background-color: var(--groove); border: 1px solid var(--line); line-height: 0; }
 .cover .cv, .cover .cv-art, .cover img, .cover svg { display: block; width: 100%; height: 100%; }
 .cover::after { content: ""; position: absolute; top: 0; right: 0; bottom: 0; width: 6px; background: linear-gradient(to left, rgba(0, 0, 0, 0.55), transparent); } /* the slot */
@@ -104,25 +144,70 @@ kbd { border: 1px solid var(--line); border-radius: 4px; padding: 0 6px; font: i
     repeating-radial-gradient(circle, #050505 0 1.4px, #1d1d1d 1.4px 2.6px); /* grooves */ }
 .playing .shelf [aria-pressed="true"] .disc { animation: spin 4s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
-.shelf .t { font: 400 1.5rem/1.15 var(--display); }
-.shelf .d { color: var(--text-2); }
-#shelf-more { margin-top: var(--s2); }
-.notes h2 { font: 400 var(--display-m)/1 var(--display); margin-bottom: var(--s3); }
-.notes p { margin: 0; max-width: 70ch; }
-.credit { margin-top: var(--s4) !important; color: var(--text-2); }
 
-.eonet { padding-bottom: var(--s5); }
+/* ---- tools, live events, footer ---- */
+.tools { border-top: 1px solid var(--line); padding: var(--s6) 0; }
+.tool-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s3) var(--s4); }
+.tool-link { min-height: 48px; display: inline-flex; align-items: center; }
+.small { color: var(--text-2); margin: var(--s3) 0 var(--s2); max-width: 75ch; }
+.keys { margin: 0; color: var(--text-2); }
+kbd { border: 1px solid var(--line); border-radius: 4px; padding: 0 6px; font: inherit; }
+.eonet { border-top: 1px solid var(--line); padding: var(--s6) 0 var(--s5); }
 .eonet-list { margin: 0; padding-left: 20px; }
 .eonet-list li { margin: var(--s1) 0; }
 footer { border-top: 1px solid var(--line); padding-top: var(--s4); padding-bottom: var(--s5); color: var(--text-2); }
 
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .skip { position: absolute; left: -9999px; }
-.skip:focus { left: 16px; top: 8px; background: var(--vinyl); padding: var(--s2); z-index: 1; }
+.skip:focus { left: 16px; top: 8px; background: var(--vinyl); padding: var(--s2); z-index: 10; }
 
+/* ---- phones ---- */
+@media (max-width: 900px) {
+  .record-info { grid-template-columns: 1fr; gap: var(--s6); }
+  .notes { border-left: 0; padding-left: 0; border-top: 1px solid var(--line); padding-top: var(--s5); }
+  .shelf.featured { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 @media (max-width: 720px) {
-  .lower { grid-template-columns: 1fr; }
+  /* The stage and the transport bar stay pinned at the top while the rest scrolls under them. */
+  .turntable { position: sticky; top: 0; z-index: 5; box-shadow: 0 6px 12px rgba(0, 0, 0, 0.35); }
+  .deck { padding: var(--s2) var(--gutter) 0; }
+  .stage video { max-height: 34svh; min-height: 0; }
+  .caption { font-size: 1rem; min-height: 1.4em; margin-top: var(--s1); }
+  /* two compact rows: Play, position, time / volume, Explore */
+  .transport { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "play scrub scrub" "vol time explore"; gap: var(--s1) var(--s3); padding: var(--s2) var(--gutter); }
+  #play { grid-area: play; min-width: 96px; min-height: 52px; font-size: 1.125rem; }
+  .scrub { grid-area: scrub; flex: none; }
+  .time { grid-area: time; }
+  .transport .vol { grid-area: vol; }
+  .explore-btn { grid-area: explore; }
+  .top { gap: 0 var(--s4); }
+  .statusline { order: 3; flex-basis: 100%; margin-bottom: var(--s1); }
+  .transport .vol span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); } /* name kept for assistive tech */
+  .transport .vol input { width: 96px; }
+  .explore-btn { margin-left: 0; min-height: 44px; padding: var(--s1) var(--s3); }
+  .probe-pad { padding-bottom: var(--s3); }
+  .probe-pad .help { display: none; } /* the full help stays the stage's description; the pad keeps its buttons */
+  .now { grid-template-columns: auto 1fr; }
+  .np-sleeve, .np-sleeve .sleeve { width: 104px; }
+  .np-num, .np-title, .np-caption { margin-left: 52px; }
+  /* The crate: one horizontal row per group, the next card peeking in as the scroll cue. */
+  .swipe { display: block; }
+  .shelf.featured, .shelf.bsides { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: var(--s3); padding-bottom: var(--s2);
+    -webkit-mask-image: linear-gradient(to right, #000 85%, transparent); mask-image: linear-gradient(to right, #000 85%, transparent); }
+  .shelf.featured li { flex: 0 0 72%; scroll-snap-align: start; }
+  .shelf.bsides li { flex: 0 0 56%; scroll-snap-align: start; }
+  .shelf.featured .sleeve { width: 120px; }
+  .shelf .sleeve { width: 80px; }
+  .shelf.featured li:last-child, .shelf.bsides li:last-child { margin-right: 20%; }
 }
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
+}
+/* Narrow phones: the now-playing block may shrink (its caption wraps anywhere) instead of widening the page. */
+@media (max-width: 900px) { .record-info { grid-template-columns: minmax(0, 1fr); } .now { grid-template-columns: auto minmax(0, 1fr); } }
+.np-caption { overflow-wrap: anywhere; }
+@media (max-width: 360px) {
+  .np-sleeve, .np-sleeve .sleeve { width: 84px; }
+  .np-num, .np-title, .np-caption { margin-left: 42px; }
+  .np-caption { letter-spacing: 0; }
 }

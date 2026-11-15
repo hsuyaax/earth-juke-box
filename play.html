@@ -18,43 +18,40 @@
       <a href="notes.html">How it works</a>
     </nav>
   </header>
-  <p class="pitch">Hear the planet. Every sound comes from the NASA picture, at the place it happened.</p>
 
   <main>
-    <div class="deck">
-    <div class="stage dark" id="stage" tabindex="0" role="application" aria-label="Map. Explore by touch" aria-describedby="probe-help">
-      <video id="video" muted playsinline loop preload="auto" aria-describedby="notes-shows"></video>
-      <canvas id="overlay" hidden aria-hidden="true"></canvas>
-      <canvas id="ripples" aria-hidden="true"></canvas>
-      <p class="loading" id="loading">Loading clip…</p>
-    </div>
-    <p id="caption" class="caption" aria-live="polite"></p>
+    <!-- Zone 1: the turntable. Stage, then the transport bar directly under it (pinned together on phones). -->
+    <div class="turntable">
+      <div class="deck">
+        <div class="stage dark" id="stage" tabindex="0" role="application" aria-label="Map. Explore by touch" aria-describedby="probe-help">
+          <video id="video" muted playsinline loop preload="auto" aria-describedby="notes-shows"></video>
+          <canvas id="overlay" hidden aria-hidden="true"></canvas>
+          <canvas id="ripples" aria-hidden="true"></canvas>
+          <p class="press-play" aria-hidden="true">Press Play to hear this map</p>
+          <p class="loading" id="loading">Loading clip…</p>
+        </div>
+        <p id="caption" class="caption" aria-live="polite"></p>
+      </div>
+
+      <div class="controls transport" id="controls" role="group" aria-label="Player">
+        <button id="play" class="primary" aria-keyshortcuts="Space">Play</button>
+        <label class="scrub">
+          <span class="sr">Position</span>
+          <input id="scrub" type="range" min="0" max="1000" value="0" />
+        </label>
+        <span id="time" class="time mono" aria-hidden="true">0:00 / 0:00</span>
+        <label class="vol">
+          <span>Volume</span>
+          <input id="volume" type="range" min="0" max="100" value="50" />
+        </label>
+        <button id="explore-btn" class="explore-btn" aria-expanded="false" aria-controls="probe-pad">Explore by touch</button>
+      </div>
+
     </div>
 
-    <div class="controls" id="controls" role="group" aria-label="Player">
-      <button id="play" class="primary" aria-keyshortcuts="Space">Play</button>
-      <label class="scrub">
-        <span class="sr">Position</span>
-        <input id="scrub" type="range" min="0" max="1000" value="0" />
-      </label>
-      <span id="time" class="time" aria-hidden="true">0:00 / 0:00</span>
-      <label class="vol">
-        <span>Volume</span>
-        <input id="volume" type="range" min="0" max="100" value="50" />
-      </label>
-      <button id="legend-btn">Learn the sounds</button>
-      <button id="overlay-btn" aria-pressed="false" aria-keyshortcuts="O">What the engine sees</button>
-      <button id="wav-btn">Save 20 s as WAV</button>
-      <label class="vol">
-        <span>Scale</span>
-        <select id="scale"><option value="">Default (pentatonic)</option></select>
-      </label>
-    </div>
-    <p class="small">Raga scales are experimental and not yet approved by a musician.</p>
-    <p class="keys">Keys: <kbd>Space</kbd> play or pause · <kbd>1</kbd>–<kbd>9</kbd>, <kbd>0</kbd> pick a record · <kbd>O</kbd> what the engine sees · arrows explore the map · <kbd>D</kbd> describe · <kbd>Esc</kbd> stop all sound</p>
-
-    <div class="probe-pad" id="probe-pad" role="group" aria-labelledby="probe-h">
-      <h2 id="probe-h" class="pad-h">Explore by touch</h2>
+    <!-- The probe's on-screen arrows: right after the transport in reading order, outside the pinned block on phones. -->
+    <div class="probe-pad" id="probe-pad" role="group" aria-labelledby="probe-h" hidden>
+      <h2 id="probe-h" class="pad-h mono">Explore by touch</h2>
       <p id="probe-help" class="help">Move over the map with a mouse or finger, or focus the map and use the arrow keys (Shift moves five cells). You hear what is under the square: the instrument says what it is, faster and louder means more, pitch is height, left and right is position. Press D to describe the spot.</p>
       <div class="pad">
         <button data-move="-1,0" aria-label="Move left">←</button>
@@ -65,16 +62,18 @@
       </div>
     </div>
 
-    <div class="lower">
-      <section aria-labelledby="shelf-h">
-        <h2 id="shelf-h">Records</h2>
-        <ul class="shelf" id="shelf"></ul>
-        <h3>More records</h3>
-        <p class="small">B-sides use one default mapping. Some move the camera, so they are artistic, not geographic.</p>
-        <ul class="shelf" id="shelf-more"></ul>
+    <!-- Zone 2: now playing, and its liner notes. -->
+    <div class="record-info">
+      <section class="now" aria-labelledby="notes-title">
+        <p class="label mono">Now playing</p>
+        <div class="np-sleeve" id="np-sleeve" aria-hidden="true"></div>
+        <p class="np-num mono" id="np-num" aria-hidden="true">01</p>
+        <h2 id="notes-title" class="np-title"></h2>
+        <p class="np-caption mono" id="np-caption"></p>
       </section>
-      <section class="notes" aria-labelledby="notes-title">
-        <h2 id="notes-title"></h2>
+      <section class="notes" aria-labelledby="liner-h">
+        <h2 id="liner-h" class="label mono">Liner notes</h2>
+        <p class="pitch">Hear the planet. Every sound comes from the NASA picture, at the place it happened.</p>
         <h3>What it shows</h3>
         <p id="notes-shows"></p>
         <h3>What you'll hear</h3>
@@ -82,16 +81,53 @@
         <h3>What to listen for</h3>
         <p id="notes-listen"></p>
         <p class="credit" id="notes-credit"></p>
+        <button id="legend-btn">Learn the sounds</button>
       </section>
     </div>
-  </main>
 
-  <section class="eonet" aria-labelledby="eonet-h">
-    <h2 id="eonet-h">Live: natural events from NASA EONET</h2>
-    <p class="small"><strong>This is not a warning system.</strong> The feed can lag by hours or days. For warnings, follow your local authorities or <a href="https://www.gdacs.org/">GDACS</a>. Events show as red diamonds on the lightning, aerosol, and Earth Today maps; the probe plays a short alert when it touches one.</p>
-    <p id="eonet-status" class="small">Loading events…</p>
-    <ul id="eonet-list" class="eonet-list"></ul>
-  </section>
+    <!-- Zone 3: the crate. -->
+    <section class="crate" aria-labelledby="shelf-h">
+      <h2 id="shelf-h" class="crate-h">The crate</h2>
+      <div class="crate-group">
+        <h3 id="featured-h" class="group-h">Featured</h3>
+        <p class="swipe mono" aria-hidden="true">Swipe for more →</p>
+        <ul class="shelf featured" id="shelf" aria-labelledby="featured-h"></ul>
+      </div>
+      <div class="crate-group">
+        <h3 id="bsides-h" class="group-h">B-sides</h3>
+        <p class="group-note">Record 4, aerosols, has its own mapping on a flat map. Records 5 to 9 share one default mapping, and some move the camera, so they are artistic, not geographic.</p>
+        <p class="swipe mono" aria-hidden="true">Swipe for more →</p>
+        <ul class="shelf bsides" id="shelf-more" aria-labelledby="bsides-h"></ul>
+      </div>
+      <div class="crate-group">
+        <h3 id="live-h" class="group-h">Live</h3>
+        <ul class="shelf live" id="shelf-live" aria-labelledby="live-h"></ul>
+      </div>
+    </section>
+
+    <!-- Everything secondary, grouped in one place. -->
+    <section class="tools" aria-labelledby="tools-h">
+      <h2 id="tools-h" class="label mono">Tools</h2>
+      <div class="tool-row">
+        <button id="overlay-btn" aria-pressed="false" aria-keyshortcuts="O">What the engine sees</button>
+        <button id="wav-btn">Save 20 s as WAV</button>
+        <label class="vol scale-tool">
+          <span>Scale</span>
+          <select id="scale"><option value="">Default (pentatonic)</option></select>
+        </label>
+        <a class="tool-link" href="notes.html">How it works</a>
+      </div>
+      <p class="small">Raga scales are experimental and not yet approved by a musician.</p>
+      <p class="keys">Keys: <kbd>Space</kbd> play or pause · <kbd>1</kbd>–<kbd>9</kbd>, <kbd>0</kbd> pick a record · <kbd>O</kbd> what the engine sees · arrows explore the map · <kbd>D</kbd> describe · <kbd>Esc</kbd> stop all sound</p>
+    </section>
+
+    <section class="eonet" aria-labelledby="eonet-h">
+      <h2 id="eonet-h" class="label mono">Live: natural events from NASA EONET</h2>
+      <p class="small"><strong>This is not a warning system.</strong> The feed can lag by hours or days. For warnings, follow your local authorities or <a href="https://www.gdacs.org/">GDACS</a>. Events show as red diamonds on the lightning, aerosol, and Earth Today maps; the probe plays a short alert when it touches one.</p>
+      <p id="eonet-status" class="small">Loading events…</p>
+      <ul id="eonet-list" class="eonet-list"></ul>
+    </section>
+  </main>
 
   <div id="status" class="sr" role="status" aria-live="polite"></div>
 

@@ -37,6 +37,17 @@ Also: live natural events from [NASA EONET](https://eonet.gsfc.nasa.gov/) as map
 
 Not yet done: listening test and screen-reader pass. Scripts: `tests/LISTENING_TEST.md`, `tests/SCREEN_READER_TEST.md`. Results will be added here exactly as they happen.
 
+## Where this goes next (future work, not built)
+
+- **Sound from the data itself.** Read the scientific data behind a visualization, not only its rendered picture, so amounts are exact rather than approximate.
+- **Any EIC visualization, with a mapping editor.** Drop in any Earth Information Center visualization and choose, in a simple editor, what its colours and motion should sound like.
+- **A kiosk mode for the display walls.** A mode for the Earth Information Center's large screens: big controls, a fixed playlist, and sound that suits a public room.
+- **Co-design with blind and low-vision listeners.** Design and review the sound language with blind and low-vision listeners, and have trained Hindustani musicians review the raga-inspired scales.
+- **More languages.** Translate the interface, the liner notes and the captions.
+- **Classroom use.** Lesson cards for teachers and a 'guess by ear' game: hear a record, name the place or the season.
+- **Haptics, and an open engine.** Touch feedback beyond phone vibration, and the engine packaged so other projects can reuse it.
+- **Live data as a first-class record.** Near-real-time imagery and events as full records, stating plainly how old each picture is.
+
 ## Run it
 
 ```

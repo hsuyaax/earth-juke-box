@@ -18,8 +18,8 @@ const PARTS = [
   ["01", "Start here: a 60-second walkthrough", "start"], ["02", "Tour of the site", "tour"], ["03", "The sound language", "language"],
   ["04", "The records", "records"], ["05", "Architecture", "architecture"], ["06", "Feature engineering", "features"],
   ["07", "From features to music", "music"], ["08", "Explore by touch", "touch"], ["09", "Earth Band", "band"],
-  ["10", "Accessibility", "access"], ["11", "What this is and is not", "limits"], ["12", "Testing", "testing"],
-  ["13", "Run it yourself", "run"], ["14", "Data and credits", "credits"], ["15", "Glossary", "glossary"],
+  ["10", "Accessibility", "access"], ["11", "What this is and is not", "limits"], ["12", "Testing", "testing"], ["13", "Where this goes next", "next"],
+  ["14", "Run it yourself", "run"], ["15", "Data and credits", "credits"], ["16", "Glossary", "glossary"],
 ];
 
 // A part: plain-language opening, then (optionally) a Details block for the technical reader.
@@ -282,7 +282,20 @@ export default function App() {
                 </div>
               </>} />
 
-            <Part n="13" id="run" title="Run it yourself" intro={<p>It is a static website: no server, no accounts, no keys. You need Node.js, and ffmpeg for the clip tests.</p>}
+            <Part n="13" id="next" title="Where this goes next" intro={<p>None of this exists yet. These are directions the project could take next, listed so it is clear what is built and what is only planned.</p>}>
+              <ul className="rules">
+                <li><strong>Future work: Sound from the data itself.</strong> Read the scientific data behind a visualization, not only its rendered picture, so amounts are exact rather than approximate.</li>
+                <li><strong>Future work: Any EIC visualization, with a mapping editor.</strong> Drop in any Earth Information Center visualization and choose, in a simple editor, what its colours and motion should sound like.</li>
+                <li><strong>Future work: A kiosk mode for the display walls.</strong> A mode for the Earth Information Center's large screens: big controls, a fixed playlist, and sound that suits a public room.</li>
+                <li><strong>Future work: Co-design with blind and low-vision listeners.</strong> Design and review the sound language with blind and low-vision listeners, and have trained Hindustani musicians review the raga-inspired scales.</li>
+                <li><strong>Future work: More languages.</strong> Translate the interface, the liner notes and the captions.</li>
+                <li><strong>Future work: Classroom use.</strong> Lesson cards for teachers and a 'guess by ear' game: hear a record, name the place or the season.</li>
+                <li><strong>Future work: Haptics, and an open engine.</strong> Touch feedback beyond phone vibration, and the engine packaged so other projects can reuse it.</li>
+                <li><strong>Future work: Live data as a first-class record.</strong> Near-real-time imagery and events as full records, stating plainly how old each picture is.</li>
+              </ul>
+            </Part>
+
+            <Part n="14" id="run" title="Run it yourself" intro={<p>It is a static website: no server, no accounts, no keys. You need Node.js, and ffmpeg for the clip tests.</p>}
               details={<pre className="code"><code>{`npm install
 npm run dev          # open the URL it prints; the jukebox is play.html
 npm run build        # static site in dist/
@@ -292,7 +305,7 @@ node tools/engine_run.mjs <record> [start] [duration] [fps]   # calibration stat
               <p>The calibration page (<a href="calibrate.html">calibrate.html</a>) shows the pixel values, cell and class for any point you click on a clip.</p>
             </Part>
 
-            <Part n="14" id="credits" title="Data and credits" intro={<p>Every picture comes from NASA's Scientific Visualization Studio, NASA GIBS, or NASA EONET.</p>}>
+            <Part n="15" id="credits" title="Data and credits" intro={<p>Every picture comes from NASA's Scientific Visualization Studio, NASA GIBS, or NASA EONET.</p>}>
               <h3>NASA resources</h3>
               <ul className="rules">
                 <li>{svs(5011, "Lightning from the ISS 2017–2023 (SVS 5011)")}</li>
@@ -309,7 +322,7 @@ node tools/engine_run.mjs <record> [start] [duration] [fps]   # calibration stat
               <p><strong>Not an official NASA product.</strong></p>
             </Part>
 
-            <Part n="15" id="glossary" title="Glossary" intro={<p>The words this guide uses, one line each.</p>}>
+            <Part n="16" id="glossary" title="Glossary" intro={<p>The words this guide uses, one line each.</p>}>
               <dl className="glossary">
                 {[
                   ["Sonification", "Turning data, or here a picture of data, into sound."], ["Frame", "One still picture of the video."],

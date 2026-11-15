@@ -158,8 +158,8 @@ export const COVER_ALT = {
 const LAYOUTS = ["cv-bl", "cv-tr", "cv-br"]; // asymmetric plate positions on one shared grid, different per record
 // size "s": the frame only (the title sits next to it). size "l": frame plus a plate with number, title and SVS caption.
 // The plate is decorative (aria-hidden): the page around the cover carries the title. Text sits on a solid panel, never on the image.
-export function coverHTML(id, { size = "s", num = 0, title = "", alt = "" } = {}) {
-  const ink = COLOR[id] || COLOR.today;
+export function coverHTML(id, { size = "s", num = 0, title = "", alt = "", ink: inkOverride } = {}) {
+  const ink = inkOverride || COLOR[id] || COLOR.today;
   const art = SVS[id]
     ? `<span class="cv-art"><img src="covers/${id}.jpg" alt="${alt}" width="600" height="600" loading="lazy" decoding="async"></span>`
     : `<span class="cv-art cv-pattern">${coverSVG(id, 200)}</span>`;

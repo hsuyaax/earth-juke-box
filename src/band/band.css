@@ -112,3 +112,26 @@ footer strong { color: var(--text); }
 .scenes { display: flex; flex-wrap: wrap; gap: var(--s3); }
 .scenes button { display: grid; text-align: left; gap: 2px; font-weight: 700; }
 .scene-who { font: 400 1rem var(--body); color: var(--text-2); }
+
+/* DESIGN_PASS_2 step 6: pads wear the NASA covers (dimmed when off, full ink when on); the strips area gets the deck's
+   grooves and a glow from the members that are on. */
+@property --g1 { syntax: "<color>"; inherits: true; initial-value: #0d1b3d; }
+@property --g2 { syntax: "<color>"; inherits: true; initial-value: #0d1b3d; }
+@property --g3 { syntax: "<color>"; inherits: true; initial-value: #0d1b3d; }
+.strips { position: relative; isolation: isolate; transition: --g1 300ms linear, --g2 300ms linear, --g3 300ms linear; }
+.strips::before { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; opacity: 0.3; transition: opacity 260ms ease;
+  background: radial-gradient(45% 75% at 18% 45%, var(--g1), transparent 72%), radial-gradient(40% 70% at 50% 40%, var(--g2), transparent 72%), radial-gradient(45% 75% at 82% 45%, var(--g3), transparent 72%); }
+.strips::after { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; background: repeating-radial-gradient(circle at 50% 140%, rgba(244, 239, 230, 0.03) 0 1px, transparent 1px 7px); }
+.strips.breathe::before { opacity: 0.35; }
+.pads.grid .pad { padding: 0 0 var(--s2); overflow: hidden; align-content: start; }
+.pad-face { display: block; width: 100%; aspect-ratio: 16 / 9; overflow: hidden; margin-bottom: var(--s2); border-bottom: 1px solid var(--line); }
+.pad-face .cv { width: 100%; height: 100%; }
+.pad-face .cv-art, .pad-face img { height: 100%; }
+.pad-face img { aspect-ratio: auto; height: 100%; object-fit: cover; }
+.pads.grid .pad[aria-pressed="false"] .pad-face { opacity: 0.4; filter: saturate(0.3); transition: opacity 300ms, filter 300ms; }
+.pads.grid .pad[aria-pressed="true"] .pad-face { opacity: 1; filter: none; }
+@media (max-width: 480px) { .pad-face { aspect-ratio: 4 / 3; } }
+.pad-name { hyphens: auto; overflow-wrap: anywhere; max-width: 100%; padding: 0 var(--s1); } /* "Atmospheric" fits a 105 px phone pad */
+@media (max-width: 360px) { .pad-name { font-size: 1rem; } } /* labels: 16 px minimum, on the narrowest phones only */
+.pads.grid .pad > .role, .pads.grid .pad > .pad-name, .pads.grid .pad > .pad-s { width: 100%; text-align: center; } /* full pad width, so long words wrap instead of spilling out */
+@media (max-width: 360px) { .pads.grid .pad > .role { letter-spacing: 0; } } /* "ARPEGGIO" fits a 320 px phone pad at 16 px */

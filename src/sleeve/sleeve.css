@@ -129,3 +129,8 @@ kbd { font: 400 1rem var(--mono); border: 1px solid var(--rule); border-radius: 
   * { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
   .js-reveal .rise { transform: none; }
 }
+
+/* Paper grain (DESIGN_PASS_2 1.1): one fixed overlay, an inline SVG feTurbulence tile at about 5%, multiplied into the page.
+   Decorative pseudo-element: no pointer events, nothing for assistive tech. Darkens slightly, so dark text only gains contrast. */
+body::after { content: ""; position: fixed; inset: 0; z-index: 30; pointer-events: none; opacity: 0.05; mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }

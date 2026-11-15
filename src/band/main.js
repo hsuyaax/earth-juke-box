@@ -15,6 +15,10 @@ import { createScore } from "./score.js";
 import { CHORDS } from "./theory.js";
 import { createBandAnalyzer } from "./analyzer.js";
 import { createLayer } from "./layers.js";
+import { coverHTML } from "../covers.js";
+import { createGlow } from "../glow.js";
+import "../cover.css";
+const COVER = { drums: "lightning", bass: "currents", lead: "nightlights", pad: "co2", shaker: "aerosols", arp: "perpetualocean", marimba: "gedi", strings: "atmosriver", drone: "airquality" };
 
 const $ = (id) => document.getElementById(id);
 const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -42,6 +46,8 @@ const M = MEMBERS.map((def) => {
     on: def.id === "bass", full: true, solo: false, activity: 0, out: null, notes: 0 };
 });
 const byId = Object.fromEntries(M.map((m) => [m.id, m]));
+// The strips area glows with the colors of up to three members that are on (same rule as the jukebox deck).
+const deckGlow = createGlow(stripsEl, () => M.filter((m) => m.on).map((m) => m.an?.state));
 $("how").innerHTML = M.map((m) => `<li><strong>${m.role}, ${m.name}:</strong> ${m.describe}</li>`).join("");
 function ensureMedia(m) {
   if (m.an) return;
@@ -166,7 +172,7 @@ async function loadAudio() {
     for (const m of M) members[m.id] = { on: audible(m), full: m.full, s: m.an?.state };
     const r = score.step(step16++, members);
     for (const e of r.events) play(e, time);
-    if (r.slot % 4 === 0) Tone.getDraw().schedule(() => { M.forEach((m) => { m.activity = m.on ? r.activity[m.id] : 0; }); glow(); if (r.slot === 0) showChord(r); }, time);
+    if (r.slot % 4 === 0) Tone.getDraw().schedule(() => { M.forEach((m) => { m.activity = m.on ? r.activity[m.id] : 0; }); glow(); if (r.slot === 0) { showChord(r); deckGlow.breathe(); } }, time);
   }, "16n");
   A = { Tone, audio, transport, release: () => { pad.releaseAll(); strings.triggerRelease(); droneGain.gain.rampTo(0, 0.3); } };
   return A;
@@ -183,7 +189,7 @@ function showChord(r) {
 // ---- pads: one per member in a 3-column grid. Tap = on or off. Hold (or S) = solo. ----
 const padsEl = $("pads");
 padsEl.innerHTML = M.map((m, i) => `<button type="button" class="pad" data-i="${i}" tabindex="${i === 0 ? 0 : -1}" style="--c: ${m.color}; --act: 0"
-  aria-label="${m.role}, ${m.name.toLowerCase()}, on" aria-pressed="false"><span class="role">${m.role}</span><span class="pad-name">${m.name}</span><span class="pad-s" aria-hidden="true"></span></button>`).join("");
+  aria-label="${m.role}, ${m.name.toLowerCase()}, on" aria-pressed="false"><span class="pad-face" aria-hidden="true">${coverHTML(COVER[m.id], { ink: m.color })}</span><span class="role">${m.role}</span><span class="pad-name">${m.name}</span><span class="pad-s" aria-hidden="true"></span></button>`).join("");
 const pads = [...padsEl.querySelectorAll(".pad")];
 let target = byId.bass; // the member the Sparse toggle applies to: the focused or last-touched pad
 const sparseBtn = $("sparse");

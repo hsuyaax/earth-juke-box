@@ -9,7 +9,32 @@ function hsvToRgb(h, s, v) {
   return [r + m, g + m, b + m];
 }
 
-export function createGlow(deck, state) {
+// Color of a whole frame from the band workers' summary (no per-cell colors there): hue from the saturation-weighted
+// hue histogram, saturation from its total over the mean brightness, value fixed (it is lifted anyway).
+function summaryColor(s) {
+  let x = 0, y = 0, sum = 0;
+  for (let i = 0; i < 12; i++) { const a = ((i + 0.5) * Math.PI) / 6; x += s.hueHistS[i] * Math.cos(a); y += s.hueHistS[i] * Math.sin(a); sum += s.hueHistS[i]; }
+  const hue = ((Math.atan2(y, x) * 180) / Math.PI + 360) % 360, sat = Math.min(1, sum / Math.max(0.02, s.meanS || 0.02));
+  return hsvToRgb(hue, sat, 1);
+}
+
+export function createGlow(deck, source) {
+  if (typeof source === "function") { // band: up to three members, one glow each
+    const cur = [[13, 27, 61], [13, 27, 61], [13, 27, 61]];
+    setInterval(() => {
+      if (document.hidden) return;
+      const states = source().filter((s) => s?.ready && s.hueHistS).slice(0, 3);
+      for (let t = 0; t < 3; t++) {
+        const s = states[t % Math.max(1, states.length)];
+        const [r, g, b] = s ? summaryColor(s) : [13 / 255, 27 / 255, 61 / 255];
+        const lift = s ? 0.62 / Math.max(r, g, b, 0.05) : 1;
+        for (let k = 0; k < 3; k++) cur[t][k] += 0.35 * ([r, g, b][k] * lift * 255 - cur[t][k]);
+        deck.style.setProperty(`--g${t + 1}`, `rgb(${cur[t].map(Math.round).join(" ")})`);
+      }
+    }, 250);
+    return { setInk(color) { deck.style.setProperty("--ink", color); }, breathe() { if (reduced.matches) return; deck.classList.add("breathe"); setTimeout(() => deck.classList.remove("breathe"), 260); } };
+  }
+  const state = source;
   const cur = [[13, 27, 61], [13, 27, 61], [13, 27, 61]]; // start at the night blue
   setInterval(() => {
     if (document.hidden || !state.ready || !state.v) return;

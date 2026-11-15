@@ -25,7 +25,23 @@ h3 { font-size: 1em; margin: var(--s4) 0 var(--s1); color: var(--amber); }
 .pitch { max-width: 1360px; margin: 0 auto; padding: var(--s2) var(--gutter) var(--s4); color: var(--text-2); }
 
 /* the deck: a near-black surround; the stage shrinks to the video box so the canvases line up with the picture exactly */
-.deck { background: var(--groove); padding: var(--s5) var(--gutter) var(--s3); margin: 0 calc(50% - 50vw); }
+/* Deck: groove texture, the record's ink as its accent, and an ambient glow from the picture (src/glow.js). Colors are
+   registered so they crossfade: glow colors over 300 ms (eased further in JS), the ink over 600 ms. */
+@property --g1 { syntax: "<color>"; inherits: true; initial-value: #0d1b3d; }
+@property --g2 { syntax: "<color>"; inherits: true; initial-value: #0d1b3d; }
+@property --g3 { syntax: "<color>"; inherits: true; initial-value: #0d1b3d; }
+@property --ink { syntax: "<color>"; inherits: true; initial-value: #ffc25c; }
+.deck { position: relative; isolation: isolate; background: var(--groove); padding: var(--s5) var(--gutter) var(--s3); margin: 0 calc(50% - 50vw);
+  border-top: 3px solid var(--ink); transition: --g1 300ms linear, --g2 300ms linear, --g3 300ms linear, --ink 600ms ease; }
+.deck::before { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; opacity: 0.3; transition: opacity 260ms ease;
+  background:
+    radial-gradient(45% 75% at 18% 45%, var(--g1), transparent 72%),
+    radial-gradient(40% 70% at 50% 40%, var(--g2), transparent 72%),
+    radial-gradient(45% 75% at 82% 45%, var(--g3), transparent 72%),
+    radial-gradient(70% 60% at 50% 110%, color-mix(in srgb, var(--ink) 30%, transparent), transparent 70%); }
+.deck::after { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; /* grooves */
+  background: repeating-radial-gradient(circle at 50% 140%, rgba(244, 239, 230, 0.03) 0 1px, transparent 1px 7px); }
+.deck.breathe::before { opacity: 0.35; } /* kept low: the caption (18 px) sits on the deck and must stay AA at the brightest glow */
 .stage { position: relative; background: #000; line-height: 0; width: fit-content; margin: 0 auto; touch-action: none; cursor: crosshair; }
 .stage video { display: block; width: auto; height: auto; max-width: 100%; max-height: 65vh; transition: opacity 1.5s; }
 .stage canvas { position: absolute; pointer-events: none; }

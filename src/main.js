@@ -9,6 +9,7 @@ import "./style.css";
 import "./cover.css";
 import { coverHTML, INK } from "./covers.js";
 import { logoSVG, pulseLogo } from "./logo.js";
+import { createGlow } from "./glow.js";
 import { createAnalyzer } from "./analysis.js";
 import { withVoices, setVolume, silenceDrones, RAGAS, setScaleOverride, auditionScale, startRecording, stopRecordingAsWav } from "./audio.js";
 import { setView, clearRipples, setMarkers } from "./ripples.js";
@@ -75,6 +76,7 @@ const fmt = (t) => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(
 // Analysis runs on decoded video frames (see analysis.js); a paused or hidden video costs nothing and
 // results stay cached. The probe has its own clock so it keeps sounding while paused (§9).
 analyzer.onFrame(() => drawOverlay(state));
+const glow = createGlow(document.querySelector(".deck"), state); // ambient glow from the colors the engine already computes
 video.addEventListener("seeked", () => analyzer.tick());
 video.addEventListener("loadeddata", () => analyzer.tick());
 setInterval(() => { if (!document.hidden && rec) probe.tick(); }, 66);
@@ -90,6 +92,8 @@ transport.scheduleRepeat((time) => {
 }, "8n");
 // The header logo sends one ring out on each beat of the live audio (draw only, no sound).
 transport.scheduleRepeat((time) => { Tone.getDraw().schedule(() => pulseLogo($("logo")), time); }, "4n");
+// The glow breathes a few percent on each bar line (draw only, no sound).
+transport.scheduleRepeat((time) => { Tone.getDraw().schedule(() => glow.breathe(), time); }, "1m");
 
 // ---- records ----
 const shelf = $("shelf"), shelfMore = $("shelf-more");
@@ -114,6 +118,7 @@ async function select(i) {
   beat = 0;
   state.nFlashes = 0;
   analyzer.setRecord(rec);
+  glow.setInk(INK[rec.id] || INK.today); // the deck's accent and glow crossfade to this record's ink
   probe.setRecord(rec);
   caption.textContent = "";
   if (transport.bpm.value !== rec.bpm) transport.bpm.value = rec.bpm; // Tone keeps every tempo automation event (see bside.js)

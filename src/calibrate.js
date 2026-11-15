@@ -1,8 +1,9 @@
 // Click a point: full-res pixel + what the analyzer computed for that cell.
 import { createAnalyzer, hsv, classify } from "./analysis.js";
-import lightning from "./records/lightning.js";
-import nightlights from "./records/nightlights.js";
-import currents from "./records/currents.js";
+// Engine settings only (the data files): this page needs no audio.
+import lightning from "./records/lightning.data.js";
+import nightlights from "./records/nightlights.data.js";
+import currents from "./records/currents.data.js";
 
 const RECORDS = [lightning, nightlights, currents];
 const video = document.getElementById("video"), out = document.getElementById("out"), pick = document.getElementById("pick");
@@ -11,7 +12,8 @@ const s = analyzer.state;
 const full = document.createElement("canvas").getContext("2d", { willReadFrequently: true });
 let rec;
 
-RECORDS.forEach((r, i) => pick.add(new Option(r.title, i)));
+const NAMES = { lightning: "Lightning from the ISS", nightlights: "Night Lights 2012–2023", currents: "Sea Surface Currents and Temperature" };
+RECORDS.forEach((r, i) => pick.add(new Option(NAMES[r.id] || r.id, i)));
 pick.addEventListener("change", () => load(+pick.value));
 function load(i) { rec = RECORDS[i]; analyzer.setRecord(rec); video.src = rec.clip; }
 video.addEventListener("seeked", () => analyzer.tick());

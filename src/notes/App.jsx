@@ -142,7 +142,7 @@ export default function App() {
                 ["1", <>Lightning from the ISS, 2017–2023 ({svs(5011)})</>, "New yellow lightning dots: the brightest pixel of a cell jumping above its running average", "A drum hit per flash; a low rumble that grows with the flash rate", "Geographic"],
                 ["2", <>Night Lights 2012–2023 ({svs(5313)})</>, "Lit cells and their color: violet (more light), orange (less light), plain lights", "A west-to-east sweep of plucks; a pad that follows overall brightness", "Geographic"],
                 ["3", <>Sea Surface Currents and Temperature ({svs(3912)})</>, "Warm and cold water by hue; motion between frames", "A warm pad and a cold bell for how much of each; a sweep that plays the fastest water", "Geographic"],
-                ["4", <>GEOS Aerosols ({svs(5552)}, {svs(5669)})</>, "Dust, smoke and sea-salt colors", "Gritty noise, a low breathy rush, an airy hiss", "Geographic"],
+                ["4", <>GEOS Aerosols: the video is {svs(5552)}, a flat, unlabelled version of the same GEOS model as the challenge's {svs(5669)}, which offers stills only</>, "Dust, smoke and sea-salt colors", "Gritty noise, a low breathy rush, an airy hiss", "Geographic"],
                 ["5–9", <>B-sides: DYAMOND CO2 ({svs(5196)}), Air Quality ({svs(5533)}), Perpetual Ocean 2 ({svs(5425)}), Atmospheric River ({svs(4960)}), GEDI Forest Height ({svs(4950)})</>, "Brightness, strongest color, motion (one default mapping)", "Loudness, chord, tempo", "Artistic, not geographic"],
                 ["0", "Earth Today (live): yesterday's MODIS true-color Earth from NASA GIBS", "The same default mapping as the B-sides, on a still image", "Loudness and chord; no motion", "Geographic"],
               ]} />

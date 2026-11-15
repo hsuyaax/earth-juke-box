@@ -5,10 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
   <title>Calibrate · Earth Jukebox</title>
+  <meta name="description" content="Developer tool for Earth Jukebox: click a point of a NASA clip to see its pixel values, grid cell and assigned class." />
   <style>
-    body { margin: 0; padding: 16px; background: #0d1b3d; color: #f4efe6; font: 16px/1.5 system-ui, sans-serif; }
+    body { margin: 0; padding: 16px; background: #0d1b3d; color: #f4efe6; font: 18px/1.5 system-ui, sans-serif; }
+    a { color: #ffc25c; }
     video { width: 100%; max-width: 1280px; display: block; cursor: crosshair; }
-    select, button { font: inherit; min-height: 40px; }
+    select, button { font: inherit; min-height: 48px; }
     pre { background: #000; padding: 12px; white-space: pre-wrap; }
     #ripples { display: none; }
   </style>
@@ -20,6 +22,8 @@
   <video id="video" controls muted playsinline loop></video>
   <canvas id="ripples"></canvas>
   <pre id="out" aria-live="polite">Click the video.</pre>
+  <p><a href="./">Earth Jukebox</a> · <a href="notes.html#run">How this tool is used</a></p>
+  <p><strong>Not an official NASA product.</strong> Clips courtesy of NASA's Scientific Visualization Studio (<a href="https://svs.gsfc.nasa.gov/5011/">5011</a>, <a href="https://svs.gsfc.nasa.gov/5313/">5313</a>, <a href="https://svs.gsfc.nasa.gov/3912/">3912</a>).</p>
   <script type="module" src="/src/calibrate.js"></script>
 </body>
 </html>

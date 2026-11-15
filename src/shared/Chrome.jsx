@@ -30,7 +30,7 @@ export function Closing() {
       <p className="display-l"><Line>Play the <em>record</em>.</Line></p>
       <p className="ctas">
         <a className="play" href="play.html">Play the record</a>
-        <a className="link" href={NOTES_URL}>Read the liner notes</a>
+        <a className="link" href={NOTES_URL}>How it works</a>
       </p>
       <p className="wordmark" aria-hidden="true">Earth Jukebox</p>
       <div className="fine">

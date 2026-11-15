@@ -318,7 +318,7 @@ node tools/engine_run.mjs <record> [start] [duration] [fps]   # calibration stat
                 <li>Concept reference: {svs(13786, "Data Sonification: Caldwell 73 (SVS 13786)")}</li>
               </ul>
               <h3>Credits</h3>
-              <p>Visualizations by NASA's Scientific Visualization Studio and NASA/Goddard Space Flight Center. Earth Today imagery from NASA GIBS (MODIS on Terra). Clips, covers, moving strips and Earth Band clips are made from those same visualizations, trimmed and re-encoded for the browser. Fonts, all under the SIL Open Font License: Atkinson Hyperlegible and Atkinson Hyperlegible Mono (Braille Institute), and Instrument Serif, self-hosted through Fontsource. Built with Vite, Tone.js, React, and Lenis. Built with help from an AI coding assistant (Claude).</p>
+              <p>Visualizations by NASA's Scientific Visualization Studio and NASA/Goddard Space Flight Center. Earth Today imagery from NASA GIBS (MODIS on Terra). The jukebox and Earth Band clips are full length, re-encoded and resized for the browser; the covers are single frames and the moving strips short loops cut from the same visualizations. Fonts, all under the SIL Open Font License: Atkinson Hyperlegible and Atkinson Hyperlegible Mono (Braille Institute), and Instrument Serif, self-hosted through Fontsource. Built with Vite, Tone.js, React, and Lenis. Code, tests and documentation were written with help from an AI coding assistant (Anthropic's Claude), directed by the team.</p>
               <p><strong>Not an official NASA product.</strong></p>
             </Part>
 

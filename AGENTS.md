@@ -12,8 +12,9 @@ Finalized: Sat 14 Nov 2026. Status updated the same day (see "Current status" be
 | P0 core | Built. 3 featured records, live music, ripples, keyboard, scrub |
 | P1 | Built: explore probe, legend, captions, liner notes, visual polish. **Not done: screen-reader pass, listening test** (scripts in `tests/`) |
 | P2 | Built: aerosols, 5 B-sides, EONET alerts, Earth Today, raga presets (experimental, need a musician's approval), WAV export, vibration |
-| Pages | `index.html` sleeve (landing), `play.html` jukebox, `notes.html` liner notes (about.html redirects). Design: DESIGN.md |
-| Deploy | Ready (Pages workflow in `.github/workflows/deploy.yml`), not yet published |
+| Earth Band | Built (beta): 9 members, pads, scenes, chord display, WAV export, Web Workers. `band.html` |
+| Pages | `index.html` (landing), `play.html` (jukebox), `band.html` (Earth Band), `notes.html` (guide), `calibrate.html` (dev tool), `about.html` (redirect to guide). Design: DESIGN.md, DESIGN_PASS_2.md, POLISH_PASS_3.md |
+| Deploy | Published to GitHub Pages: https://hsuyaax.github.io/earth-juke-box/ |
 | Tests | `npm test` (fast), `npm run test:clips` (real clips, needs ffmpeg) |
 
 Where the numbers live: engine settings and thresholds in `src/records/<id>.data.js` (each with the measurement behind it). BUILD_PLAN.md is the original build order; where its numbers differ from the code, the code and this file win.
